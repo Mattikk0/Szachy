@@ -144,26 +144,36 @@ public class Board extends GridPane {
 
                     for (Coordinates<Integer, Integer> coord : Pieces.moveList) {
                         if (coord.getX() == finalRow && coord.getY() == finalCol) {
-                            game.move(finalRow, finalCol, lastClickedPiece, tempRow, tempCol, lastClickedPiece.color);
+                            game.move(finalRow, finalCol, lastClickedPiece, tempRow, tempCol, lastClickedPiece.color, current);
                             current.getState(game_board, turn.toString());
-                            System.out.println(current.material);
                             turn.changeTurn();
+                            for (Pieces[] pieces : game_board) {
+                                for (Pieces piece : pieces) {
+                                    if (piece instanceof Pawn && Objects.equals(piece.color, turn.player)) {
+                                        ((Pawn) piece).movedByTwo = false;
+                                    }
+                                }
+                            }
                             return;
                         }
                     }
 
                     for (Coordinates<Integer, Integer> coord : Pieces.takesList) {
                         if (coord.getX() == finalRow && coord.getY() == finalCol) {
-                            game.move(finalRow, finalCol, lastClickedPiece, tempRow, tempCol, lastClickedPiece.color);
+                            game.move(finalRow, finalCol, lastClickedPiece, tempRow, tempCol, lastClickedPiece.color, current);
                             current.getState(game_board, turn.toString());
-                            current.material = current.material + game_board[finalRow][finalCol].value;
-                            System.out.println(current.material);
                             turn.changeTurn();
+                            for (Pieces[] pieces : game_board) {
+                                for (Pieces piece : pieces) {
+                                    if (piece instanceof Pawn && Objects.equals(piece.color, turn.player)) {
+                                        ((Pawn) piece).movedByTwo = false;
+                                    }
+                                }
+                            }
                             return;
                         }
                     }
                 });
-
                 cell.getChildren().addAll(square, label);
                 this.add(cell, col, row);
             }

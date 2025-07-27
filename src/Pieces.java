@@ -19,8 +19,4 @@ public abstract class Pieces {
         }
         return false;
     }
-    public GameState convertToGS(int row, int col){
-        GameState player = new GameState(Board.game_board, Board.game_board[row][col].color);
-        return player;
-    }
 }

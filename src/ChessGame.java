@@ -13,20 +13,33 @@ public class ChessGame {
         playerPiece.legalTakes(row, col);
         System.out.println(Pieces.takesList);
     }
-    void move(int row, int col, Pieces piece, int prev_row, int prev_col, String color) {
+    void move(int row, int col, Pieces piece, int prev_row, int prev_col, String color, GameState player) {
         Pieces target = Board.game_board[row][col];
 
         if (target != null && !target.color.equals(piece.color)) {
-            GameState player = piece.convertToGS(row, col);
             player.material += target.value;
             Board.cells[row][col].getChildren().remove(target.label);
         }
-
+        if(target==null && piece instanceof Pawn && ((Pawn) piece).did_ep == true){
+            player.material += 1;
+            if(piece.color.equals("white")){
+                Board.cells[row+1][col].getChildren().remove(Board.game_board[row+1][col].label);
+                Board.game_board[row+1][col] = null;
+            }else{
+                Board.cells[row-1][col].getChildren().remove(Board.game_board[row-1][col].label);
+                Board.game_board[row-1][col] = null;
+            }
+            ((Pawn) piece).did_ep = false;
+        }
+        if(piece instanceof Pawn && Math.abs(prev_row-row) == 2){
+            ((Pawn) piece).movedByTwo = true;
+        }
         Board.game_board[row][col] = piece;
         Board.game_board[prev_row][prev_col] = null;
         Board.cells[prev_row][prev_col].getChildren().remove(piece.label);
         Board.cells[row][col].getChildren().add(piece.label);
         piece.drawPiece(color, piece.label);
+
 
         Pieces.moveList.clear();
         Pieces.takesList.clear();

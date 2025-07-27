@@ -6,8 +6,11 @@ public class Pawn extends Pieces{
         this.label = label;
         this.color = color;
         this.value = 1;
+        this.movedByTwo = false;
+        this.did_ep = false;
     }
-    private final ChessGame game = new ChessGame();
+    public boolean did_ep;
+    public boolean movedByTwo;
     @Override
     public void legalMoves(int row, int col) {
         if(this.color.equals("white")){
@@ -33,6 +36,7 @@ public class Pawn extends Pieces{
 
     @Override
     void legalTakes(int row, int col) {
+        enPassant(row, col);
         if(this.color.equals("white") ){
             if(!isOutOfBoard(row-1, col+1) && Board.game_board[row-1][col+1]!=null && !(Board.game_board[row-1][col+1].color.equals(this.color)) && !(Board.game_board[row-1][col+1] instanceof King)) {
                 takesList.add(new Coordinates<>(row-1, col+1));
@@ -56,6 +60,26 @@ public class Pawn extends Pieces{
             label.setText("♙");
         }else{
             label.setText("♟");
+        }
+    }
+    void enPassant(int row, int col){
+        if(!isOutOfBoard(row, col+1) && Board.game_board[row][col+1] != null && Board.game_board[row][col+1] instanceof Pawn && Board.game_board[row][col+1].color != this.color && ((Pawn) Board.game_board[row][col+1]).movedByTwo == true){
+            if(this.color.equals("white")){
+                takesList.add(new Coordinates<>(row-1, col+1));
+                this.did_ep = true;
+            }else{
+                takesList.add(new Coordinates<>(row+1, col+1));
+                this.did_ep = true;
+            }
+        }
+        if(!isOutOfBoard(row, col-1) && Board.game_board[row][col-1] != null && Board.game_board[row][col-1] instanceof Pawn && Board.game_board[row][col-1].color != this.color && ((Pawn) Board.game_board[row][col-1]).movedByTwo == true){
+            if(this.color.equals("white")){
+                takesList.add(new Coordinates<>(row-1, col-1));
+                this.did_ep = true;
+            }else{
+                takesList.add(new Coordinates<>(row+1, col-1));
+                this.did_ep = true;
+            }
         }
     }
 
