@@ -139,6 +139,7 @@ public class Board extends GridPane {
                         game.showLegalMoves(clickedPiece, finalRow, finalCol);
                         drawMoves();
                         drawTakes();
+
                         return;
                     }
 

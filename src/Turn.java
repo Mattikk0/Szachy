@@ -10,11 +10,9 @@ public class Turn {
         if(this.player.equals("white")){
             this.player = "black";
             Board.current = blackPlayer;
-            System.out.println("White: " + whitePlayer.material);
         }else{
             this.player = "white";
             Board.current = whitePlayer;
-            System.out.println("Black: " + blackPlayer.material);
         }
     }
 }

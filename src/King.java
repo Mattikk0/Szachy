@@ -1,10 +1,14 @@
 import javafx.scene.control.Label;
 
+import java.util.Objects;
+
 public class King extends Pieces{
+    public boolean moved;
     public King(String color, Label label) {
         this.drawPiece(color, label);
         this.color = color;
         this.label = label;
+        this.moved = false;
     }
     private void moveUpRight(int row, int col){
         if (!isOutOfBoard(row - 1, col + 1) && Board.game_board[row - 1][col + 1] == null) {
@@ -110,6 +114,48 @@ public class King extends Pieces{
             }
         }
     }
+    private void castling(Pieces leftRook, Pieces rightRook){
+        if(leftRook instanceof Rook) {
+            if (leftRook != null && !this.moved && !((Rook)(leftRook)).moved) {
+                for (int c = 1; c < 4; c++) {
+                    if (Objects.equals(this.color, "black")) {
+                        if (Board.game_board[0][c] != null) {
+                            break;
+                        }else{
+                            moveList.add(new Coordinates<>(0, 2));
+                        }
+
+                    } else {
+                        if (Board.game_board[7][c] != null) {
+                            break;
+                        }else{
+                            moveList.add(new Coordinates<>(7, 2));
+                        }
+                    }
+                }
+            }
+        }
+        if(rightRook instanceof Rook) {
+            if (rightRook != null && !this.moved && !((Rook) (rightRook)).moved) {
+                for (int c = 5; c < 7; c++) {
+                    if (Objects.equals(this.color, "black")) {
+                        if (Board.game_board[0][c] != null) {
+                            break;
+                        }else{
+                            moveList.add(new Coordinates<>(0, 6));
+                        }
+                    } else {
+                        if (Board.game_board[7][c] != null) {
+                            break;
+                        }else{
+                            moveList.add(new Coordinates<>(7, 6));
+                        }
+                    }
+
+                }
+            }
+        }
+    }
     @Override
     void legalMoves(int row, int col) {
         moveDown(row, col);
@@ -120,6 +166,11 @@ public class King extends Pieces{
         moveDownLeft(row, col);
         moveDownRight(row, col);
         moveUpRight(row, col);
+        if(this.color.equals("white")){
+            castling(Board.game_board[7][0], Board.game_board[7][7]);
+        }else{
+            castling(Board.game_board[0][0], Board.game_board[0][7]);
+        }
     }
 
     @Override

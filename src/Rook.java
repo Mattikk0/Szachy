@@ -1,11 +1,13 @@
 import javafx.scene.control.Label;
 
 public class Rook extends Pieces{
+    public boolean moved;
     public Rook(String color, Label label) {
         this.drawPiece(color, label);
         this.color = color;
         this.label = label;
         this.value = 5;
+        this.moved = false;
     }
 
     private void moveUp(int row, int col){
