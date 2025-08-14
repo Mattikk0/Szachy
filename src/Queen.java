@@ -1,7 +1,9 @@
 import javafx.scene.control.Label;
 
+import java.util.List;
+
 public class Queen extends Pieces{
-    public Queen(String color, Label label) {
+    public Queen(PieceColor color, Label label) {
         this.drawPiece(color, label);
         this.color = color;
         this.label = label;
@@ -161,11 +163,21 @@ public class Queen extends Pieces{
     }
 
     @Override
-    void drawPiece(String color, Label label) {
-        if(color.equals("white")) {
+    void drawPiece(PieceColor color, Label label) {
+        if(color == PieceColor.WHITE) {
             label.setText("♕");
         }else{
             label.setText("♛");
         }
+    }
+
+    @Override
+    List<Coordinates<Integer, Integer>> getCheckPath() {
+        return List.of();
+    }
+
+    @Override
+    boolean isChecking() {
+        return false;
     }
 }

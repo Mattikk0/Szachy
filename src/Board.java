@@ -9,13 +9,19 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+
 
 public class Board extends GridPane {
     private final ChessGame game;
     public static Pieces[][] game_board = new Pieces[8][8];
     static StackPane[][] cells = new StackPane[8][8];
     Pieces lastClickedPiece;
+    public static List<Pieces> list_of_checking_pieces = new ArrayList<>();
+    public static Pieces checkingPiece;
     private static final int TILE_SIZE = 100;
     private static final int ROWS = 8;
     private static final int COLS = 8;
@@ -30,58 +36,70 @@ public class Board extends GridPane {
 
     static void drawPieces(Label label, int row, int col) {
         if (row == 6) {
-            Pawn white_pawn = new Pawn("white", label);
+            Pawn white_pawn = new Pawn(PieceColor.WHITE, label);
             game_board[6][col] = white_pawn;
+            white_pawn.position = new Coordinates<>(6, col);
         }
         if (row == 1) {
-            Pawn black_pawn = new Pawn("black", label);
+            Pawn black_pawn = new Pawn(PieceColor.BLACK, label);
             game_board[1][col] = black_pawn;
+            black_pawn.position = new Coordinates<>(1, col);
         }
         if (row == 0) {
             switch (col) {
                 case 0, 7:
-                    Rook black_rook = new Rook("black", label);
+                    Rook black_rook = new Rook(PieceColor.BLACK, label);
                     game_board[0][col] = black_rook;
+                    black_rook.position = new Coordinates<>(0, col);
                     break;
                 case 1, 6:
-                    Knight black_knight = new Knight("black", label);
+                    Knight black_knight = new Knight(PieceColor.BLACK, label);
                     game_board[0][col] = black_knight;
+                    black_knight.position = new Coordinates<>(0, col);
                     break;
                 case 2, 5:
-                    Bishop black_bishop = new Bishop("black", label);
+                    Bishop black_bishop = new Bishop(PieceColor.BLACK, label);
                     game_board[0][col] = black_bishop;
+                    black_bishop.position = new Coordinates<>(0, col);
                     break;
                 case 3:
-                    Queen black_queen = new Queen("black", label);
+                    Queen black_queen = new Queen(PieceColor.BLACK, label);
                     game_board[0][col] = black_queen;
+                    black_queen.position = new Coordinates<>(0, col);
                     break;
                 case 4:
-                    King black_king = new King("black", label);
+                    King black_king = new King(PieceColor.BLACK, label);
                     game_board[0][col] = black_king;
+                    black_king.position = new Coordinates<>(0, col);
                     break;
             }
         }
         if (row == 7) {
             switch (col) {
                 case 0, 7:
-                    Rook white_rook = new Rook("white", label);
+                    Rook white_rook = new Rook(PieceColor.WHITE, label);
                     game_board[7][col] = white_rook;
+                    white_rook.position = new Coordinates<>(7, col);
                     break;
                 case 1, 6:
-                    Knight white_knight = new Knight("white", label);
+                    Knight white_knight = new Knight(PieceColor.WHITE, label);
                     game_board[7][col] = white_knight;
+                    white_knight.position = new Coordinates<>(7, col);
                     break;
                 case 2, 5:
-                    Bishop white_bishop = new Bishop("white", label);
+                    Bishop white_bishop = new Bishop(PieceColor.WHITE, label);
                     game_board[7][col] = white_bishop;
+                    white_bishop.position = new Coordinates<>(7, col);
                     break;
                 case 3:
-                    Queen white_queen = new Queen("white", label);
+                    Queen white_queen = new Queen(PieceColor.WHITE, label);
                     game_board[7][col] = white_queen;
+                    white_queen.position = new Coordinates<>(7, col);
                     break;
                 case 4:
-                    King white_king = new King("white", label);
+                    King white_king = new King(PieceColor.WHITE, label);
                     game_board[7][col] = white_king;
+                    white_king.position = new Coordinates<>(7, col);
                     break;
             }
         }
@@ -146,7 +164,15 @@ public class Board extends GridPane {
                     for (Coordinates<Integer, Integer> coord : Pieces.moveList) {
                         if (coord.getX() == finalRow && coord.getY() == finalCol) {
                             game.move(finalRow, finalCol, lastClickedPiece, tempRow, tempCol, lastClickedPiece.color, current);
-                            current.getState(game_board, turn.toString());
+                            if(lastClickedPiece.isChecking()){
+                                checkingPiece = lastClickedPiece;
+                                list_of_checking_pieces.add(lastClickedPiece);
+                                Coordinates king_position = Pieces.findFigure(King.class, lastClickedPiece.color.oppositeColor());
+                                ((King)game_board[king_position.getX()][king_position.getY()]).isChecked = true;
+                            }
+                            System.out.println(lastClickedPiece.isChecking() + " " + lastClickedPiece);
+                            System.out.println(lastClickedPiece.checkPath);
+                            current.getState(game_board, turn.player);
                             turn.changeTurn();
                             for (Pieces[] pieces : game_board) {
                                 for (Pieces piece : pieces) {
@@ -162,7 +188,7 @@ public class Board extends GridPane {
                     for (Coordinates<Integer, Integer> coord : Pieces.takesList) {
                         if (coord.getX() == finalRow && coord.getY() == finalCol) {
                             game.move(finalRow, finalCol, lastClickedPiece, tempRow, tempCol, lastClickedPiece.color, current);
-                            current.getState(game_board, turn.toString());
+                            current.getState(game_board, turn.player);
                             turn.changeTurn();
                             for (Pieces[] pieces : game_board) {
                                 for (Pieces piece : pieces) {

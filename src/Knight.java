@@ -1,7 +1,9 @@
  import javafx.scene.control.Label;
 
-public class Knight extends Pieces{
-    public Knight(String color, Label label) {
+ import java.util.List;
+
+ public class Knight extends Pieces{
+    public Knight(PieceColor color, Label label) {
         this.drawPiece(color, label);
         this.label = label;
         this.color = color;
@@ -132,11 +134,21 @@ public class Knight extends Pieces{
     }
 
     @Override
-    void drawPiece(String color, Label label) {
-        if(color.equals("white")) {
+    void drawPiece(PieceColor color, Label label) {
+        if(color == PieceColor.WHITE) {
             label.setText("♘");
         }else{
             label.setText("♞");
         }
     }
-}
+
+     @Override
+     List<Coordinates<Integer, Integer>> getCheckPath() {
+         return List.of();
+     }
+
+     @Override
+     boolean isChecking() {
+         return false;
+     }
+ }

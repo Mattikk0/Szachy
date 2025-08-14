@@ -12,7 +12,7 @@ public class ChessGame {
         Pieces.takesList.clear();
         playerPiece.legalTakes(row, col);
     }
-    void move(int row, int col, Pieces piece, int prev_row, int prev_col, String color, GameState player) {
+    void move(int row, int col, Pieces piece, int prev_row, int prev_col, PieceColor color, GameState player) {
         Pieces target = Board.game_board[row][col];
 
         if (target != null && !target.color.equals(piece.color)) {
@@ -21,7 +21,7 @@ public class ChessGame {
         }
         if(target==null && piece instanceof Pawn && ((Pawn) piece).did_ep){
             player.material += 1;
-            if(piece.color.equals("white")){
+            if(piece.color == PieceColor.WHITE){
                 Board.cells[row+1][col].getChildren().remove(Board.game_board[row+1][col].label);
                 Board.game_board[row+1][col] = null;
             }else{
@@ -39,14 +39,14 @@ public class ChessGame {
         if(piece instanceof King){
             ((King) piece).moved = true;
             if(prev_col - col == 2){
-                if(piece.color.equals("white")){
+                if(piece.color == PieceColor.WHITE){
                     Board.game_board[7][0].setPosition(7, 3);
                 }else{
                     Board.game_board[0][0].setPosition(0, 3);
                 }
             }
             if(prev_col - col == -2){
-                if(piece.color.equals("white")){
+                if(piece.color == PieceColor.WHITE){
                     Board.game_board[7][7].setPosition(7, 5);
                 }else{
                     Board.game_board[0][7].setPosition(0, 5);
@@ -58,8 +58,8 @@ public class ChessGame {
         Board.cells[prev_row][prev_col].getChildren().remove(piece.label);
         Board.cells[row][col].getChildren().add(piece.label);
         piece.drawPiece(color, piece.label);
-
-
+        piece.position = null;
+        piece.position = new Coordinates<>(row, col);
         Pieces.moveList.clear();
         Pieces.takesList.clear();
     }
