@@ -1,17 +1,17 @@
 public class Turn {
-    String player;
-    GameState whitePlayer =  new GameState(Board.game_board, "white");
-    GameState blackPlayer =  new GameState(Board.game_board, "black");
+    PieceColor player;
+    GameState whitePlayer =  new GameState(Board.game_board, PieceColor.WHITE);
+    GameState blackPlayer =  new GameState(Board.game_board, PieceColor.BLACK);
     public Turn(){
-        this.player = "white";
+        this.player = PieceColor.WHITE;
         Board.current = whitePlayer;
     }
     void changeTurn(){
-        if(this.player.equals("white")){
-            this.player = "black";
+        if(this.player == PieceColor.WHITE){
+            this.player = PieceColor.BLACK;
             Board.current = blackPlayer;
         }else{
-            this.player = "white";
+            this.player = PieceColor.WHITE;
             Board.current = whitePlayer;
         }
     }

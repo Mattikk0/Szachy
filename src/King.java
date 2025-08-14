@@ -1,14 +1,17 @@
 import javafx.scene.control.Label;
 
+import java.util.List;
 import java.util.Objects;
 
 public class King extends Pieces{
     public boolean moved;
-    public King(String color, Label label) {
+    public boolean isChecked;
+    public King(PieceColor color, Label label) {
         this.drawPiece(color, label);
         this.color = color;
         this.label = label;
         this.moved = false;
+        this.isChecked = false;
     }
     private void moveUpRight(int row, int col){
         if (!isOutOfBoard(row - 1, col + 1) && Board.game_board[row - 1][col + 1] == null) {
@@ -166,7 +169,7 @@ public class King extends Pieces{
         moveDownLeft(row, col);
         moveDownRight(row, col);
         moveUpRight(row, col);
-        if(this.color.equals("white")){
+        if(this.color == PieceColor.WHITE){
             castling(Board.game_board[7][0], Board.game_board[7][7]);
         }else{
             castling(Board.game_board[0][0], Board.game_board[0][7]);
@@ -186,11 +189,21 @@ public class King extends Pieces{
     }
 
     @Override
-    void drawPiece(String color, Label label) {
-        if(color.equals("white")) {
+    void drawPiece(PieceColor color, Label label) {
+        if(color == PieceColor.WHITE) {
             label.setText("♔");
         }else{
             label.setText("♚");
         }
+    }
+
+    @Override
+    List<Coordinates<Integer, Integer>> getCheckPath() {
+        return null;
+    }
+
+    @Override
+    boolean isChecking() {
+        return false;
     }
 }
