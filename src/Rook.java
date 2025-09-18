@@ -16,7 +16,7 @@ public class Rook extends Pieces {
     private void moveUp(int row, int col) {
         if (!isOutOfBoard(row - 1, col)) {
             if (Board.game_board[row - 1][col] == null) {
-                moveList.add(new Coordinates<>(row - 1, col));
+                this.moveList.add(new Coordinates<>(row - 1, col));
                 moveUp(row - 1, col);
             }
         }
@@ -25,7 +25,7 @@ public class Rook extends Pieces {
     private void moveRight(int row, int col) {
         if (!isOutOfBoard(row, col + 1)) {
             if (Board.game_board[row][col + 1] == null) {
-                moveList.add(new Coordinates<>(row, col + 1));
+                this.moveList.add(new Coordinates<>(row, col + 1));
                 moveRight(row, col + 1);
             }
         }
@@ -34,7 +34,7 @@ public class Rook extends Pieces {
     private void moveLeft(int row, int col) {
         if (!isOutOfBoard(row, col - 1)) {
             if (Board.game_board[row][col - 1] == null) {
-                moveList.add(new Coordinates<>(row, col - 1));
+                this.moveList.add(new Coordinates<>(row, col - 1));
                 moveLeft(row, col - 1);
             }
         }
@@ -43,7 +43,7 @@ public class Rook extends Pieces {
     private void moveDown(int row, int col) {
         if (!isOutOfBoard(row + 1, col)) {
             if (Board.game_board[row + 1][col] == null) {
-                moveList.add(new Coordinates<>(row + 1, col));
+                this.moveList.add(new Coordinates<>(row + 1, col));
                 moveDown(row + 1, col);
             }
         }
@@ -52,7 +52,7 @@ public class Rook extends Pieces {
     private void takeUp(int row, int col) {
         if (!isOutOfBoard(row - 1, col)) {
             if (Board.game_board[row - 1][col] != null && !(Board.game_board[row - 1][col].color.equals(this.color)) && !(Board.game_board[row - 1][col] instanceof King)) {
-                takesList.add(new Coordinates<>(row - 1, col));
+                this.takesList.add(new Coordinates<>(row - 1, col));
             } else if (Board.game_board[row - 1][col] == null) {
                 takeUp(row - 1, col);
             }
@@ -62,7 +62,7 @@ public class Rook extends Pieces {
     private void takeDown(int row, int col) {
         if (!isOutOfBoard(row + 1, col)) {
             if (Board.game_board[row + 1][col] != null && !(Board.game_board[row + 1][col].color.equals(this.color)) && !(Board.game_board[row + 1][col] instanceof King)) {
-                takesList.add(new Coordinates<>(row + 1, col));
+                this.takesList.add(new Coordinates<>(row + 1, col));
             } else if (Board.game_board[row + 1][col] == null) {
                 takeDown(row + 1, col);
             }
@@ -72,7 +72,7 @@ public class Rook extends Pieces {
     private void takeRight(int row, int col) {
         if (!isOutOfBoard(row, col + 1)) {
             if (Board.game_board[row][col + 1] != null && !(Board.game_board[row][col + 1].color.equals(this.color)) && !(Board.game_board[row][col + 1] instanceof King)) {
-                takesList.add(new Coordinates<>(row, col + 1));
+                this.takesList.add(new Coordinates<>(row, col + 1));
             } else if (Board.game_board[row][col + 1] == null) {
                 takeRight(row, col + 1);
             }
@@ -82,7 +82,7 @@ public class Rook extends Pieces {
     private void takeLeft(int row, int col) {
         if (!isOutOfBoard(row, col - 1)) {
             if (Board.game_board[row][col - 1] != null && !(Board.game_board[row][col - 1].color.equals(this.color)) && !(Board.game_board[row][col - 1] instanceof King)) {
-                takesList.add(new Coordinates<>(row, col - 1));
+                this.takesList.add(new Coordinates<>(row, col - 1));
             } else if (Board.game_board[row][col - 1] == null) {
                 takeLeft(row, col - 1);
             }

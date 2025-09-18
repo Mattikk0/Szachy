@@ -14,5 +14,13 @@ public class Turn {
             this.player = PieceColor.WHITE;
             Board.current = whitePlayer;
         }
+        for(Pieces[] row : Board.game_board) {
+            for (Pieces king : row) {
+                if(king instanceof King){
+                    ((King) king).zone.clear();
+                    ((King)king).updateZone();
+                }
+            }
+        }
     }
 }

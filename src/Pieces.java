@@ -5,12 +5,11 @@ import java.util.List;
 
 public abstract class Pieces {
     public PieceColor color;
-    //public String color;
     public Label label;
     public int value;
     public Coordinates<Integer, Integer> position;
-    public static List<Coordinates<Integer, Integer>> moveList = new ArrayList<>();
-    public static List<Coordinates<Integer, Integer>> takesList = new ArrayList<>();
+    public List<Coordinates<Integer, Integer>> moveList = new ArrayList<>();
+    public List<Coordinates<Integer, Integer>> takesList = new ArrayList<>();
     public List<Coordinates<Integer, Integer>> checkPath = new ArrayList<>();
     abstract void legalMoves(int row, int col);
     abstract void legalTakes(int row, int col);

@@ -4,14 +4,18 @@ import java.util.Objects;
 
 public class ChessGame {
     void showLegalMoves(Pieces piece, int row, int col){
-        Pieces.moveList.clear();
+        piece.moveList.clear();
         piece.legalMoves(row, col);
         showLegalTakes(piece, row, col);
     }
     void showLegalTakes(Pieces playerPiece, int row, int col){
-        Pieces.takesList.clear();
+        if(playerPiece instanceof Pawn){
+            ((Pawn) playerPiece).epList.clear();
+        }
+        playerPiece.takesList.clear();
         playerPiece.legalTakes(row, col);
     }
+
     void move(int row, int col, Pieces piece, int prev_row, int prev_col, PieceColor color, GameState player) {
         Pieces target = Board.game_board[row][col];
 
@@ -60,7 +64,8 @@ public class ChessGame {
         piece.drawPiece(color, piece.label);
         piece.position = null;
         piece.position = new Coordinates<>(row, col);
-        Pieces.moveList.clear();
-        Pieces.takesList.clear();
+        piece.moveList.clear();
+        piece.takesList.clear();
     }
+
 }
