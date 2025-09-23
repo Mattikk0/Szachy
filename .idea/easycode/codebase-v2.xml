@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="com.obiscr.chatgpt.settings.EasyCodeState">
+    <option name="projectFiles" value="$PROJECT_DIR$/src/Bishop.java;C:/Users/matil/IdeaProjects/Szachy/src/Board.java;C:/Users/matil/IdeaProjects/Szachy/src/ChessGame.java;C:/Users/matil/IdeaProjects/Szachy/src/Coordinates.java;C:/Users/matil/IdeaProjects/Szachy/src/GameState.java;C:/Users/matil/IdeaProjects/Szachy/src/King.java;C:/Users/matil/IdeaProjects/Szachy/src/Knight.java;C:/Users/matil/IdeaProjects/Szachy/src/Main.java;C:/Users/matil/IdeaProjects/Szachy/src/Pair.java;C:/Users/matil/IdeaProjects/Szachy/src/Pawn.java;C:/Users/matil/IdeaProjects/Szachy/src/PieceColor.java;C:/Users/matil/IdeaProjects/Szachy/src/Pieces.java;C:/Users/matil/IdeaProjects/Szachy/src/Queen.java;C:/Users/matil/IdeaProjects/Szachy/src/Rook.java;C:/Users/matil/IdeaProjects/Szachy/src/Turn.java;C:/Users/matil/IdeaProjects/Szachy/README.md" />
+  </component>
+</project>

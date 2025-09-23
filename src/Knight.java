@@ -118,7 +118,7 @@
         moveUpRight(row, col);
         moveDownLeft(row, col);
         moveDownRight(row, col);
-
+        filterMovesLeadingToCheck(this.moveList);
     }
 
     @Override
@@ -131,6 +131,7 @@
         takeRightUp(row, col);
         takeUpRight(row, col);
         takeUpLeft(row, col);
+        filterMovesLeadingToCheck(this.takesList);
     }
 
     @Override
@@ -141,11 +142,6 @@
             label.setText("♞");
         }
     }
-
-     @Override
-     List<Coordinates<Integer, Integer>> getCheckPath() {
-         return List.of();
-     }
 
      @Override
      boolean isChecking() {

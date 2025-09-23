@@ -36,6 +36,7 @@ public class Pawn extends Pieces{
                 }
             }
         }
+        filterMovesLeadingToCheck(this.moveList);
     }
 
     @Override
@@ -56,6 +57,7 @@ public class Pawn extends Pieces{
                 this.takesList.add(new Coordinates<>(row+1, col-1));
             }
         }
+        filterMovesLeadingToCheck(this.takesList);
     }
 
     @Override
@@ -65,11 +67,6 @@ public class Pawn extends Pieces{
         }else{
             label.setText("♟");
         }
-    }
-
-    @Override
-    List<Coordinates<Integer, Integer>> getCheckPath() {
-        return null;
     }
 
     @Override
@@ -107,6 +104,7 @@ public class Pawn extends Pieces{
                 this.did_ep = true;
             }
         }
+        filterMovesLeadingToCheck(this.epList);
     }
 
 }

@@ -151,6 +151,7 @@ public class Queen extends Pieces{
         moveDownLeft(row, col);
         moveDownRight(row, col);
         moveUpRight(row, col);
+        filterMovesLeadingToCheck(this.moveList);
     }
 
     @Override
@@ -163,6 +164,7 @@ public class Queen extends Pieces{
         takeDown(row,col);
         takeRight(row, col);
         takeLeft(row, col);
+        filterMovesLeadingToCheck(this.takesList);
     }
 
     @Override
@@ -174,73 +176,68 @@ public class Queen extends Pieces{
         }
     }
 
-    List<Coordinates<Integer, Integer>> bishopCheckPath(){
-        Coordinates king_position = null;
-        king_position = findFigure(King.class, this.color.oppositeColor());
-        int drow = Integer.compare(king_position.getX(), this.position.getX());
-        int dcol = Integer.compare(king_position.getY(), this.position.getY());
-        int row = this.position.getX() + drow;
-        int col = this.position.getY() + dcol;
-        while(!isOutOfBoard(row, col)){
-            if(Board.game_board[row][col] != null){
-                if(Board.game_board[row][col] instanceof King && Board.game_board[row][col].color != this.color){
-                    return this.checkPath;
-                }else{
-                    this.checkPath.clear();
-                    break;
-                }
-            }
-            this.checkPath.add(new Coordinates<>(row, col));
-            row+=drow;
-            col+=dcol;
-        }
-        return null;
-    }
-    List<Coordinates<Integer, Integer>> rookCheckPath(){
-        Coordinates king_position = null;
-        king_position = findFigure(King.class, this.color.oppositeColor());
-        int[][] directions = {
-                {-1, 0},
-                {1, 0},
-                {0, -1},
-                {0, 1}
-        };
-        for (int[] dir : directions) {
-            checkPath.clear();
-            int row = this.position.getX() + dir[0];
-            int col = this.position.getY() + dir[1];
-            while (!isOutOfBoard(row, col)) {
-                if (Board.game_board[row][col] != null) {
-                    if (Board.game_board[row][col] instanceof King && Board.game_board[row][col].color != this.color) {
-                        return this.checkPath;
-                    } else {
-                        this.checkPath.clear();
-                        break;
-                    }
-                }
-                this.checkPath.add(new Coordinates(row, col));
-                row += dir[0];
-                col += dir[1];
-            }
-        }
-        return null;
-    }
-    @Override
-    List<Coordinates<Integer, Integer>> getCheckPath() {
-        List<Coordinates<Integer, Integer>> rook = rookCheckPath();
-        List<Coordinates<Integer, Integer>> bishop = bishopCheckPath();
-        Set<Coordinates<Integer, Integer>> merged = new LinkedHashSet<>();
-        if(rook != null) merged.addAll(rook);
-        if(bishop != null) merged.addAll(bishop);
-        if(!merged.isEmpty()){
-            this.checkPath = new ArrayList<>(merged);
-            return checkPath;
-        }
-        return null;
-    }
-
     @Override
     public boolean isChecking() {
-        return this.getCheckPath() != null;
+        Coordinates<Integer, Integer> kingPosition = findFigure(King.class, this.color.oppositeColor());
+        if (kingPosition == null) {
+            return false;
+        }
+
+        int queenRow = this.position.getX();
+        int queenCol = this.position.getY();
+        int kingRow = kingPosition.getX();
+        int kingCol = kingPosition.getY();
+
+        if (queenRow == kingRow) {
+            int start = Math.min(queenCol, kingCol) + 1;
+            int end = Math.max(queenCol, kingCol);
+
+            for (int col = start; col < end; col++) {
+                if (Board.game_board[queenRow][col] != null) {
+                    return false;
+                }
+            }
+
+            Pieces king = Board.game_board[kingRow][kingCol];
+            return king instanceof King && king.color != this.color;
+        }
+
+        if (queenCol == kingCol) {
+            int start = Math.min(queenRow, kingRow) + 1;
+            int end = Math.max(queenRow, kingRow);
+
+            for (int row = start; row < end; row++) {
+                if (Board.game_board[row][queenCol] != null) {
+                    return false;
+                }
+            }
+
+            Pieces king = Board.game_board[kingRow][kingCol];
+            return king instanceof King && king.color != this.color;
+        }
+
+        int dx = Math.abs(queenRow - kingRow);
+        int dy = Math.abs(queenCol - kingCol);
+        int dirX = Integer.compare(kingRow, queenRow);
+        int dirY = Integer.compare(kingCol, queenCol);
+
+        if (dx == dy) {
+            int r = queenRow + dirX;
+            int c = queenCol + dirY;
+
+            while (r != kingRow && c != kingCol) {
+                if (Board.game_board[r][c] != null) {
+                    return false;
+                }
+                r += dirX;
+                c += dirY;
+            }
+
+            Pieces king = Board.game_board[kingRow][kingCol];
+            return king instanceof King && king.color != this.color;
+        }
+
+        return false;
     }
+
 }

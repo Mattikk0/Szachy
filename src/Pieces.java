@@ -14,7 +14,6 @@ public abstract class Pieces {
     abstract void legalMoves(int row, int col);
     abstract void legalTakes(int row, int col);
     abstract void drawPiece(PieceColor color, Label label);
-    abstract List<Coordinates<Integer, Integer>> getCheckPath();
     abstract boolean isChecking();
     boolean isOutOfBoard(int row, int col) {
         return row > 7 || row < 0 || col > 7 || col < 0;
@@ -39,5 +38,36 @@ public abstract class Pieces {
             }
         }
         return null;
+    }
+
+    public void filterMovesLeadingToCheck(List<Coordinates<Integer, Integer>> filteredList){
+        List<Coordinates<Integer, Integer>> safeMoves = new ArrayList<>();
+        for(Coordinates<Integer, Integer> move : filteredList){
+            Pieces originalTarget = Board.game_board[move.getX()][move.getY()];
+            Coordinates<Integer, Integer> originalPosition = this.position;
+            Board.game_board[move.getX()][move.getY()] = this;
+            Board.game_board[originalPosition.getX()][originalPosition.getY()] = null;
+            this.position = move;
+            boolean isInCheck = false;
+            for (Pieces[] line : Board.game_board) {
+                for (Pieces piece : line) {
+                    if (piece != null && piece.color != this.color) {
+                        if(piece.isChecking()){
+                            isInCheck = true;
+                            break;
+                        }
+                    }
+                }
+                if(isInCheck) break;
+            }
+            if(!isInCheck){
+                safeMoves.add(move);
+            }
+            Board.game_board[originalPosition.getX()][originalPosition.getY()] = this;
+            Board.game_board[move.getX()][move.getY()] = originalTarget;
+            this.position = originalPosition;
+        }
+        filteredList.clear();
+        filteredList.addAll(safeMoves);
     }
 }

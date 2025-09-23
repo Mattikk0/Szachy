@@ -84,6 +84,7 @@ public class Bishop extends Pieces {
         moveDownLeft(row, col);
         moveDownRight(row, col);
         moveUpRight(row, col);
+        filterMovesLeadingToCheck(this.moveList);
     }
 
     @Override
@@ -92,6 +93,7 @@ public class Bishop extends Pieces {
         takeDownRight(row, col);
         takeUpLeft(row, col);
         takeUpRight(row, col);
+        filterMovesLeadingToCheck(this.takesList);
     }
 
     @Override
@@ -103,29 +105,39 @@ public class Bishop extends Pieces {
         }
     }
 
-    public List<Coordinates<Integer, Integer>> getCheckPath(){
-        Coordinates king_position = null;
-        king_position = findFigure(King.class, this.color.oppositeColor());
-        int drow = Integer.compare(king_position.getX(), this.position.getX());
-        int dcol = Integer.compare(king_position.getY(), this.position.getY());
-        int row = this.position.getX() + drow;
-        int col = this.position.getY() + dcol;
-        while(!isOutOfBoard(row, col)){
-            if(Board.game_board[row][col] != null){
-                if(Board.game_board[row][col] instanceof King && Board.game_board[row][col].color != this.color){
-                    return this.checkPath;
-                }else{
-                    this.checkPath.clear();
-                    break;
-                }
-            }
-            this.checkPath.add(new Coordinates<>(row, col));
-            row+=drow;
-            col+=dcol;
-        }
-        return null;
-    }
+    @Override
     public boolean isChecking() {
-        return this.getCheckPath() != null;
+        Coordinates<Integer, Integer> kingPosition = findFigure(King.class, this.color.oppositeColor());
+        if (kingPosition == null) return false;
+
+        int dx = kingPosition.getX() - this.position.getX();
+        int dy = kingPosition.getY() - this.position.getY();
+
+        if (Math.abs(dx) != Math.abs(dy)) return false;
+
+        if (dx == 0 || dy == 0) return false;
+
+        int directionX = dx < 0 ? -1 : 1;
+        int directionY = dy < 0 ? -1 : 1;
+
+        int stepCount = Math.abs(dx) - 1;
+
+        int r = this.position.getX();
+        int c = this.position.getY();
+
+        for (int i = 0; i < stepCount; i++) {
+            r += directionX;
+            c += directionY;
+
+            if (Board.game_board[r][c] != null) {
+                return false;
+            }
+        }
+
+        r += directionX;
+        c += directionY;
+
+        return Board.game_board[r][c] instanceof King && Board.game_board[r][c].color != this.color;
     }
+
 }

@@ -95,6 +95,7 @@ public class Rook extends Pieces {
         moveUp(row, col);
         moveRight(row, col);
         moveLeft(row, col);
+        filterMovesLeadingToCheck(this.moveList);
     }
 
     @Override
@@ -103,6 +104,7 @@ public class Rook extends Pieces {
         takeDown(row, col);
         takeRight(row, col);
         takeLeft(row, col);
+        filterMovesLeadingToCheck(this.takesList);
     }
 
     @Override
@@ -115,39 +117,44 @@ public class Rook extends Pieces {
     }
 
     @Override
-    List<Coordinates<Integer, Integer>> getCheckPath() {
-        Coordinates king_position = null;
-        king_position = findFigure(King.class, this.color.oppositeColor());
-        int[][] directions = {
-                {-1, 0},
-                {1, 0},
-                {0, -1},
-                {0, 1}
-        };
-        for (int[] dir : directions) {
-            checkPath.clear();
-            int row = this.position.getX() + dir[0];
-            int col = this.position.getY() + dir[1];
-            while (!isOutOfBoard(row, col)) {
-                if (Board.game_board[row][col] != null) {
-                    if (Board.game_board[row][col] instanceof King && Board.game_board[row][col].color != this.color) {
-                        return this.checkPath;
-                    } else {
-                        this.checkPath.clear();
-                        break;
-                    }
-                }
-                this.checkPath.add(new Coordinates(row, col));
-                row += dir[0];
-                col += dir[1];
-            }
-        }
-        return null;
-    }
-
-
-    @Override
     public boolean isChecking() {
-        return this.getCheckPath() != null;
+        Coordinates<Integer, Integer> kingPosition = findFigure(King.class, this.color.oppositeColor());
+        if (kingPosition == null) {
+            return false;
+        }
+
+        if (this.position.getX() != kingPosition.getX() && this.position.getY() != kingPosition.getY()) {
+            return false;
+        }
+
+        if (this.position.getX() == kingPosition.getX()) {
+            int startCol = Math.min(this.position.getY(), kingPosition.getY());
+            int endCol = Math.max(this.position.getY(), kingPosition.getY());
+
+            for (int col = startCol + 1; col < endCol; col++) {
+                if (Board.game_board[this.position.getX()][col] != null) {
+                    return false;
+                }
+            }
+
+            Pieces finalPiece = Board.game_board[kingPosition.getX()][kingPosition.getY()];
+            return finalPiece instanceof King && finalPiece.color != this.color;
+        }
+        if (this.position.getY() == kingPosition.getY()) {
+            int startRow = Math.min(this.position.getX(), kingPosition.getX());
+            int endRow = Math.max(this.position.getX(), kingPosition.getX());
+
+            for (int row = startRow + 1; row < endRow; row++) {
+                if (Board.game_board[row][this.position.getY()] != null) {
+                    return false;
+                }
+            }
+
+            Pieces finalPiece = Board.game_board[kingPosition.getX()][kingPosition.getY()];
+            return finalPiece instanceof King && finalPiece.color != this.color;
+        }
+
+        return false;
     }
+
 }

@@ -5,8 +5,8 @@ import java.util.Objects;
 public class ChessGame {
     void showLegalMoves(Pieces piece, int row, int col){
         piece.moveList.clear();
-        piece.legalMoves(row, col);
         showLegalTakes(piece, row, col);
+        piece.legalMoves(row, col);
     }
     void showLegalTakes(Pieces playerPiece, int row, int col){
         if(playerPiece instanceof Pawn){
