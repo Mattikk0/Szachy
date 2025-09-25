@@ -18,12 +18,11 @@ import java.util.Objects;
 
 public class Board extends GridPane {
     private final ChessGame game;
+    static long board_hash;
+    static long[][][] combinations_table;
     public static Pieces[][] game_board = new Pieces[8][8];
-    public static Boolean[][] checkedFields = new Boolean[8][8];
     static StackPane[][] cells = new StackPane[8][8];
     Pieces lastClickedPiece;
-    public static List<Pieces> list_of_checking_pieces = new ArrayList<>();
-    public static Pieces checkingPiece;
     private static final int TILE_SIZE = 100;
     private static final int ROWS = 8;
     private static final int COLS = 8;
@@ -36,7 +35,7 @@ public class Board extends GridPane {
         drawBoard();
     }
 
-    static void drawPieces(Label label, int row, int col) {
+    static void drawPiecesNewGame(Label label, int row, int col) {
         if (row == 6) {
             Pawn white_pawn = new Pawn(PieceColor.WHITE, label);
             game_board[6][col] = white_pawn;
@@ -135,7 +134,11 @@ public class Board extends GridPane {
                 label.setAlignment(Pos.CENTER);
                 GridPane.setHalignment(label, HPos.CENTER);
                 GridPane.setValignment(label, VPos.CENTER);
-                drawPieces(label, row, col);
+                if(this.game.new_game) {
+                    drawPiecesNewGame(label, row, col);
+                }else{
+
+                }
 
                 Rectangle square = new Rectangle(TILE_SIZE, TILE_SIZE);
                 boolean isLight = (row + col) % 2 == 0;
@@ -173,12 +176,6 @@ public class Board extends GridPane {
                     for (Coordinates<Integer, Integer> coord : lastClickedPiece.moveList) {
                         if (coord.getX() == finalRow && coord.getY() == finalCol) {
                             game.move(finalRow, finalCol, lastClickedPiece, tempRow, tempCol, lastClickedPiece.color, current);
-                            if(lastClickedPiece.isChecking()){
-                                checkingPiece = lastClickedPiece;
-                                list_of_checking_pieces.add(lastClickedPiece);
-                                Coordinates king_position = Pieces.findFigure(King.class, lastClickedPiece.color.oppositeColor());
-                                ((King)game_board[king_position.getX()][king_position.getY()]).isChecked = true;
-                            }
                             current.getState(game_board, turn.player);
                             turn.changeTurn();
 
@@ -196,12 +193,6 @@ public class Board extends GridPane {
                     for (Coordinates<Integer, Integer> coord : lastClickedPiece.takesList) {
                         if (coord.getX() == finalRow && coord.getY() == finalCol) {
                             game.move(finalRow, finalCol, lastClickedPiece, tempRow, tempCol, lastClickedPiece.color, current);
-                            if(lastClickedPiece.isChecking()){
-                                checkingPiece = lastClickedPiece;
-                                list_of_checking_pieces.add(lastClickedPiece);
-                                Coordinates king_position = Pieces.findFigure(King.class, lastClickedPiece.color.oppositeColor());
-                                ((King)game_board[king_position.getX()][king_position.getY()]).isChecked = true;
-                            }
                             current.getState(game_board, turn.player);
                             turn.changeTurn();
                             for (Pieces[] pieces : game_board) {
@@ -238,22 +229,20 @@ public class Board extends GridPane {
             Iterator<Coordinates<Integer, Integer>> it = piece.takesList.iterator();
             while (it.hasNext()) {
                 Coordinates<Integer, Integer> p = it.next();
-                if (Board.game_board[p.getX()][p.getY()] == null) {
+                if (Board.game_board[p.getX()][p.getY()] == null || game_board[p.getX()][p.getY()].color.equals(piece.color)) {
                     it.remove();
                 }
             }
             for (int i = 0; i < piece.takesList.size(); i++) {
                 int x = piece.takesList.get(i).getX();
                 int y = piece.takesList.get(i).getY();
-                if(game_board[x][y] != null && !game_board[x][y].color.equals(piece.color)) {
-                    StackPane targetCell = cells[x][y];
-                    Label takeDot = new Label("•");
-                    takeDot.setTextFill(Color.RED);
-                    takeDot.setStyle("-fx-font-size: 64px;");
-                    takeDot.setAlignment(Pos.CENTER);
-                    takeDot.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-                    targetCell.getChildren().add(takeDot);
-                }
+                StackPane targetCell = cells[x][y];
+                Label takeDot = new Label("•");
+                takeDot.setTextFill(Color.RED);
+                takeDot.setStyle("-fx-font-size: 64px;");
+                takeDot.setAlignment(Pos.CENTER);
+                takeDot.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+                targetCell.getChildren().add(takeDot);
             }
         }
     }

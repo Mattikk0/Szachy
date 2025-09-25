@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class Main extends Application {
     @Override
     public void start(Stage stage) {
-        boolean newGame = true;
+        Board.combinations_table = ChessGame.allCombinations();
         ChessGame game = new ChessGame();
         Board board = new Board(game);
         Scene scene = new Scene(board, 800, 800);

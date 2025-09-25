@@ -59,6 +59,7 @@ public abstract class Pieces {
                     }
                 }
                 if(isInCheck) break;
+
             }
             if(!isInCheck){
                 safeMoves.add(move);
@@ -70,4 +71,5 @@ public abstract class Pieces {
         filteredList.clear();
         filteredList.addAll(safeMoves);
     }
+
 }

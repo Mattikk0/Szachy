@@ -234,4 +234,18 @@ public class King extends Pieces{
     boolean isChecking() {
         return false;
     }
+
+    public void setCheckStatus(){
+        this.isChecked = false;
+        for (Pieces[] line : Board.game_board) {
+            for (Pieces piece : line) {
+                if (piece != null && piece.color != this.color) {
+                    if(piece.isChecking()){
+                        this.isChecked = true;
+                        break;
+                    }
+                }
+            }
+        }
+    }
 }

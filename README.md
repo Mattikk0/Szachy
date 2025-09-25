@@ -13,3 +13,11 @@ Wersja 1.2
 (m) poprawiony błąd w roszadzie od strony króla, zmiany w filtrowaniu ruchw króla, zmienione en Passant, zmiany w funkcjach isChecking()
 
 (-) usunięcie funkcji getCheckPath()
+
+Wersja 1.3
+
+(+) mat, pat(brak ruchów), haszowanie pozycji na szachownicy do jednej liczby
+
+(-) usunięte kilka niepotrzebnych (po usprawnieniu działania szacha) rzeczy
+
+(!) wywaliło jakiś błąd w trakcie gry nie zidentyfikowany, nie wiadomo co go spowodowało, po uruchomieniu ponownie nigdy się nie powtórzył. Wywaliło go po zrobieniu rozszady w kingside białego i po kolejnym ruchu czarnego po kliknięciu jakiejkolwiek figury wyrzucało cały czas ten sam błąd i nie można było ruszyć.
