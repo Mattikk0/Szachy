@@ -1,7 +1,10 @@
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
+import javafx.scene.Scene;
 import javafx.scene.control.Label;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
@@ -29,10 +32,24 @@ public class Board extends GridPane {
     int tempRow, tempCol;
     Turn turn = new Turn();
     static GameState current = new GameState();
-
+    static GameState whole_board = new GameState();
     public Board(ChessGame game) {
         this.game = game;
         drawBoard();
+        this.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null) {
+                setupKeySaveHandler(newScene);
+            }
+        });
+    }
+    private void setupKeySaveHandler(Scene scene) {
+        scene.addEventFilter(KeyEvent.ANY, event -> {
+            if (event.getCode() == KeyCode.S && !event.isControlDown()) {
+                whole_board.getBoard(game_board);
+                whole_board.saveToFile();
+                event.consume();
+            }
+        });
     }
 
     static void drawPiecesNewGame(Label label, int row, int col) {
@@ -137,7 +154,7 @@ public class Board extends GridPane {
                 if(this.game.new_game) {
                     drawPiecesNewGame(label, row, col);
                 }else{
-
+                    game.loadGame("SavedGame.txt");
                 }
 
                 Rectangle square = new Rectangle(TILE_SIZE, TILE_SIZE);

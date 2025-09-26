@@ -21,3 +21,9 @@ Wersja 1.3
 (-) usunięte kilka niepotrzebnych (po usprawnieniu działania szacha) rzeczy
 
 (!) wywaliło jakiś błąd w trakcie gry nie zidentyfikowany, nie wiadomo co go spowodowało, po uruchomieniu ponownie nigdy się nie powtórzył. Wywaliło go po zrobieniu rozszady w kingside białego i po kolejnym ruchu czarnego po kliknięciu jakiejkolwiek figury wyrzucało cały czas ten sam błąd i nie można było ruszyć.
+
+Wersja 1.4
+
+(+) Zapis i odczyt partii z pliku .txt . 
+
+(m) Zmienione rozpoczęcie gry (zależy od boola czy nowa gra czy wczytanie starej)
