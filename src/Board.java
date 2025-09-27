@@ -22,6 +22,7 @@ import java.util.Objects;
 public class Board extends GridPane {
     private final ChessGame game;
     static long board_hash;
+    static List<Long> hashList = new ArrayList<>();
     static long[][][] combinations_table;
     public static Pieces[][] game_board = new Pieces[8][8];
     static StackPane[][] cells = new StackPane[8][8];
@@ -30,26 +31,14 @@ public class Board extends GridPane {
     private static final int ROWS = 8;
     private static final int COLS = 8;
     int tempRow, tempCol;
-    Turn turn = new Turn();
+    static Turn turn = new Turn();
     static GameState current = new GameState();
     static GameState whole_board = new GameState();
     public Board(ChessGame game) {
         this.game = game;
         drawBoard();
-        this.sceneProperty().addListener((obs, oldScene, newScene) -> {
-            if (newScene != null) {
-                setupKeySaveHandler(newScene);
-            }
-        });
-    }
-    private void setupKeySaveHandler(Scene scene) {
-        scene.addEventFilter(KeyEvent.ANY, event -> {
-            if (event.getCode() == KeyCode.S && !event.isControlDown()) {
-                whole_board.getBoard(game_board);
-                whole_board.saveToFile();
-                event.consume();
-            }
-        });
+        Board.board_hash = ChessGame.hashBoardToNumber();
+        System.out.println(Board.board_hash);
     }
 
     static void drawPiecesNewGame(Label label, int row, int col) {
@@ -155,6 +144,7 @@ public class Board extends GridPane {
                     drawPiecesNewGame(label, row, col);
                 }else{
                     game.loadGame("SavedGame.txt");
+                    turn.loadAdditionalInfo();
                 }
 
                 Rectangle square = new Rectangle(TILE_SIZE, TILE_SIZE);
@@ -193,7 +183,6 @@ public class Board extends GridPane {
                     for (Coordinates<Integer, Integer> coord : lastClickedPiece.moveList) {
                         if (coord.getX() == finalRow && coord.getY() == finalCol) {
                             game.move(finalRow, finalCol, lastClickedPiece, tempRow, tempCol, lastClickedPiece.color, current);
-                            current.getState(game_board, turn.player);
                             turn.changeTurn();
 
                             for (Pieces[] pieces : game_board) {
@@ -210,7 +199,6 @@ public class Board extends GridPane {
                     for (Coordinates<Integer, Integer> coord : lastClickedPiece.takesList) {
                         if (coord.getX() == finalRow && coord.getY() == finalCol) {
                             game.move(finalRow, finalCol, lastClickedPiece, tempRow, tempCol, lastClickedPiece.color, current);
-                            current.getState(game_board, turn.player);
                             turn.changeTurn();
                             for (Pieces[] pieces : game_board) {
                                 for (Pieces piece : pieces) {

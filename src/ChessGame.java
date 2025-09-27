@@ -3,17 +3,13 @@ import javafx.scene.control.Label;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.PrintWriter;
 import java.util.*;
-import java.util.stream.Collectors;
-
-import static java.lang.Integer.parseInt;
 
 public class ChessGame {
     boolean new_game = false;
+    public static int no_progress_moves = 0;
 
     void showLegalMoves(Pieces piece, int row, int col) {
         piece.moveList.clear();
@@ -30,13 +26,16 @@ public class ChessGame {
     }
 
     void move(int row, int col, Pieces piece, int prev_row, int prev_col, PieceColor color, GameState player) {
+        ChessGame.no_progress_moves++;
         Pieces target = Board.game_board[row][col];
 
         if (target != null && !target.color.equals(piece.color)) {
+            ChessGame.no_progress_moves = 0;
             player.material += target.value;
             Board.cells[row][col].getChildren().remove(target.label);
         }
         if (target == null && piece instanceof Pawn && ((Pawn) piece).did_ep) {
+            ChessGame.no_progress_moves = 0;
             player.material += 1;
             if (piece.color == PieceColor.WHITE) {
                 Board.cells[row + 1][col].getChildren().remove(Board.game_board[row + 1][col].label);
@@ -115,10 +114,53 @@ public class ChessGame {
 
     static boolean checkIfStalemate(PieceColor king_color) {
         King king = (King) Board.game_board[Pieces.findFigure(King.class, king_color).getX()][Pieces.findFigure(King.class, king_color).getY()];
-        if (!king.isChecked && checkIfGameOver(king_color)) {
+        if (!king.isChecked && (checkIfGameOver(king_color) || noProgressStalemate() || repetitionStalemate() || insufficientMaterialStalemate())) {
             return true;
         }
         return false;
+    }
+
+    static boolean noProgressStalemate(){
+        return no_progress_moves >= 50;
+    }
+
+    static boolean repetitionStalemate(){
+        for(Long hash : Board.hashList){
+            if(Board.hashList.stream().filter(h -> h.equals(hash)).count() >= 3){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    static boolean insufficientMaterialStalemate(){
+        int piecesCount = 0;
+        int bishopsWhite = 0;
+        int bishopsBlack = 0;
+        int knightsWhite = 0;
+        int knightsBlack = 0;
+        for (Pieces[] row : Board.game_board) {
+            for (Pieces piece : row) {
+                if (piece != null) {
+                    piecesCount++;
+                    if(piece instanceof Bishop){
+                        if(piece.color == PieceColor.WHITE){
+                            bishopsWhite++;
+                        }else{
+                            bishopsBlack++;
+                        }
+                    }
+                    if(piece instanceof Knight){
+                        if(piece.color == PieceColor.WHITE){
+                            knightsWhite++;
+                        }else{
+                            knightsBlack++;
+                        }
+                    }
+                }
+            }
+        }
+        return piecesCount == 2 || (piecesCount == 3 && (bishopsWhite == 1 || bishopsBlack == 1)) || (piecesCount == 4 && bishopsWhite == 1 && bishopsBlack == 1) || (piecesCount == 3 && (knightsWhite == 1 || knightsBlack == 1)) || (piecesCount == 4 && knightsWhite == 1 && knightsBlack == 1) || (piecesCount == 4 && ((knightsWhite == 1 && bishopsWhite == 1) || (knightsBlack == 1 && bishopsBlack == 1)));
     }
 
     static long[][][] allCombinations() {
@@ -175,6 +217,7 @@ public class ChessGame {
                 }
             }
         }
+        updateHashList(hash);
         return hash;
     }
 
@@ -244,6 +287,62 @@ public class ChessGame {
                 Board.cells[coordinates.getX()][coordinates.getY()].getChildren().add(piece.label);
             }
             piece.drawPiece(piece.color, piece.label);
+        }
+    }
+
+    static void updateHashList(Long hash){
+        if(Board.hashList.size()>9){
+            Board.hashList.remove(0);
+        }
+        Board.hashList.add(hash);
+    }
+
+    static void savePiecesAdditionalInfo(){
+        Coordinates white_king_pos = Pieces.findFigure(King.class, PieceColor.WHITE);
+        Coordinates black_king_pos = Pieces.findFigure(King.class, PieceColor.BLACK);
+        Pieces white_king = Board.game_board[white_king_pos.getX()][white_king_pos.getY()];
+        Pieces black_king = Board.game_board[black_king_pos.getX()][black_king_pos.getY()];
+        Coordinates movedByTwoPawn = null;
+        for(Pieces[] row : Board.game_board){
+            for(Pieces piece : row){
+                if(piece instanceof Pawn){
+                    if(((Pawn) piece).movedByTwo){
+                        movedByTwoPawn = piece.position;
+                    }
+                }
+            }
+        }
+        try (PrintWriter writer = new PrintWriter("KingPawnInfo.txt")) {
+            writer.println(((King)white_king).moved + " " + ((King)black_king).moved + " " + movedByTwoPawn.getX() + " " + movedByTwoPawn.getY());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    static void loadPiecesAdditionalInfo(){
+        Coordinates white_king_pos = Pieces.findFigure(King.class, PieceColor.WHITE);
+        Coordinates black_king_pos = Pieces.findFigure(King.class, PieceColor.BLACK);
+        Pieces white_king = Board.game_board[white_king_pos.getX()][white_king_pos.getY()];
+        Pieces black_king = Board.game_board[black_king_pos.getX()][black_king_pos.getY()];
+        try (Scanner scanner = new Scanner(new File("KingPawnInfo.txt"))) {
+            if (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                String[] parts = line.split(" ");
+                if (parts.length >= 4) {
+                    ((King)white_king).moved = Boolean.parseBoolean(parts[0]);
+                    ((King)black_king).moved = Boolean.parseBoolean(parts[1]);
+                    if(!parts[2].equals("null") && !parts[3].equals("null")){
+                        int pawnRow = Integer.parseInt(parts[2]);
+                        int pawnCol = Integer.parseInt(parts[3]);
+                        Pieces piece = Board.game_board[pawnRow][pawnCol];
+                        if(piece instanceof Pawn){
+                            ((Pawn) piece).movedByTwo = true;
+                        }
+                    }
+                }
+            }
+        } catch (FileNotFoundException | NumberFormatException e) {
+            e.printStackTrace();
         }
     }
 }

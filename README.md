@@ -27,3 +27,13 @@ Wersja 1.4
 (+) Zapis i odczyt partii z pliku .txt . 
 
 (m) Zmienione rozpoczęcie gry (zależy od boola czy nowa gra czy wczytanie starej)
+
+Wersja 1.5
+
+(+) pat(50 ruchów bez bicia/szacha, 3 powtórzenia pozycji, brak materiału do mata), zapisywanie dodatkowych informacji o stanie partii (licznik ruchów bez bicia/szacha, tura gracza, punkty materiału graczy)
+
+(-) usunięta metoda getState() w GameState.
+
+(m) Zapisywanie po każdym ruchu zamiast po kliknięciu klawisza "s".
+
+(?) Wstępnie zrobione: zapisywanie informacji który pionek ruszył się o 2 pola i czy król został ruszony (do roszady ale trzeba dodać czy wieże zostały ruszone).
