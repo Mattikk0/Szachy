@@ -19,11 +19,18 @@ public abstract class Pieces {
         return row > 7 || row < 0 || col > 7 || col < 0;
     }
     public void setPosition(int newRow, int newCol){
-        int oldRow = this.position.getX();
-        int oldCol = this.position.getY();
+        int oldRow;
+        int oldCol;
+        if(this.position != null){
+            oldRow = this.position.getX();
+            oldCol = this.position.getY();
+            Board.cells[oldRow][oldCol].getChildren().remove(Board.game_board[oldRow][oldCol].label);
+            Board.game_board[oldRow][oldCol] = null;
+        }
         Board.game_board[newRow][newCol] = this;
-        Board.cells[oldRow][oldCol].getChildren().remove(Board.game_board[oldRow][oldCol].label);
-        Board.game_board[oldRow][oldCol] = null;
+        if(Board.cells[newRow][newCol] != null){
+            Board.cells[newRow][newCol].getChildren().remove(this.label);
+        }
         Board.cells[newRow][newCol].getChildren().add(this.label);
         this.drawPiece(this.color, this.label);
     }
@@ -42,9 +49,18 @@ public abstract class Pieces {
 
     public void filterMovesLeadingToCheck(List<Coordinates<Integer, Integer>> filteredList){
         List<Coordinates<Integer, Integer>> safeMoves = new ArrayList<>();
+        if (this.position == null) {
+            filteredList.clear();
+            return;
+        }
+        Coordinates<Integer, Integer> originalPosition = this.position;
+        if (originalPosition == null) {
+            filteredList.clear();
+            return;
+        }
         for(Coordinates<Integer, Integer> move : filteredList){
             Pieces originalTarget = Board.game_board[move.getX()][move.getY()];
-            Coordinates<Integer, Integer> originalPosition = this.position;
+            originalPosition = this.position;
             Board.game_board[move.getX()][move.getY()] = this;
             Board.game_board[originalPosition.getX()][originalPosition.getY()] = null;
             this.position = move;

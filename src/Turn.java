@@ -17,6 +17,7 @@ public class Turn {
             this.player = PieceColor.BLACK;
             Board.current = blackPlayer;
         }else{
+            ChessGame.full_turns++;
             this.player = PieceColor.WHITE;
             Board.current = whitePlayer;
         }
@@ -35,37 +36,10 @@ public class Turn {
             System.out.println("Stalemate!");
         }
         Board.board_hash = ChessGame.hashBoardToNumber();
-        System.out.println(Board.board_hash);
+        System.out.println(ChessGame.no_progress_moves);
         Board.whole_board.getBoard(Board.game_board);
         Board.whole_board.saveToFile();
-        saveAdditionalInfo();
     }
 
-
-    void saveAdditionalInfo(){
-        try (PrintWriter writer = new PrintWriter("AdditionalInfo.txt")) {
-            writer.println(whitePlayer.material + " " + blackPlayer.material + " " + this.player + " " + ChessGame.no_progress_moves);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    void loadAdditionalInfo(){
-        try (Scanner scanner = new Scanner(new File("AdditionalInfo.txt"))) {
-            if (scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                String[] parts = line.split(" ");
-                if (parts.length < 4) return;
-
-                Board.current = parts[2].equals("WHITE") ? whitePlayer : blackPlayer;
-                ChessGame.no_progress_moves = Integer.parseInt(parts[3]);
-                this.player = parts[2].equals("WHITE") ? PieceColor.WHITE : PieceColor.BLACK;
-                whitePlayer.material = Integer.parseInt(parts[0]);
-                blackPlayer.material = Integer.parseInt(parts[1]);
-            }
-        } catch (FileNotFoundException | NumberFormatException e) {
-            e.printStackTrace();
-        }
-    }
 
 }

@@ -8,8 +8,9 @@ import java.io.PrintWriter;
 import java.util.*;
 
 public class ChessGame {
-    boolean new_game = false;
+    boolean new_game = true;
     public static int no_progress_moves = 0;
+    public static int full_turns = 0;
 
     void showLegalMoves(Pieces piece, int row, int col) {
         piece.moveList.clear();
@@ -46,7 +47,11 @@ public class ChessGame {
             }
             ((Pawn) piece).did_ep = false;
         }
+        if(target == null && piece instanceof Pawn && !((Pawn) piece).did_ep){
+            ChessGame.no_progress_moves = 0;
+        }
         if (piece instanceof Pawn && Math.abs(prev_row - row) == 2) {
+            ChessGame.no_progress_moves = 0;
             ((Pawn) piece).movedByTwo = true;
         }
         if (piece instanceof Rook) {
@@ -221,74 +226,128 @@ public class ChessGame {
         return hash;
     }
 
-    List<Pair<Pieces, Coordinates>> loadFromFile(File file) {
 
-        List<Pair<Pieces, Coordinates>> piecesList = new ArrayList<>();
-
-        try (Scanner scanner = new Scanner(new File(file.getAbsolutePath()))) {
-            while (scanner.hasNextLine()) {
-                Label label = new Label();
-                label.setStyle("-fx-font-size: 36px;");
-                label.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-                label.setAlignment(Pos.CENTER);
-                String line = scanner.nextLine();
-                String[] parts = line.split(" ");
-                if (parts.length < 4) continue;
-
-                String pieceType = parts[0];
-                int row = Integer.parseInt(parts[1]);
-                int col = Integer.parseInt(parts[2]);
-                PieceColor color = parts[3].equals("WHITE") ? PieceColor.WHITE : PieceColor.BLACK;
-
-                Pieces piece = switch (pieceType) {
-                    case "Pawn" -> new Pawn(color, label);
-                    case "Rook" -> new Rook(color, label);
-                    case "Knight" -> new Knight(color, label);
-                    case "Bishop" -> new Bishop(color, label);
-                    case "Queen" -> new Queen(color, label);
-                    case "King" -> new King(color, label);
-                    default -> null;
-                };
-
-                if (piece != null) {
-                    Coordinates<Integer, Integer> position = new Coordinates<>(row, col);
-                    piecesList.add(new Pair<>(piece, position));
-                }
+    void loadGameFromFile(String file_name) {
+        try {
+            Scanner scanner = new Scanner(new File(file_name));
+            String fenString = scanner.nextLine().trim();
+            scanner.close();
+            String[] fenParts = fenString.split(" ");
+            if (fenParts.length < 6) {
+                throw new IOException("Invalid FEN string: insufficient parts");
             }
-        } catch (FileNotFoundException | NumberFormatException e) {
-            e.printStackTrace();
-        }
-
-        return piecesList;
-    }
-
-
-    void loadGame(String file){
-        for (int row = 0; row < 8; row++) {
-            for (int col = 0; col < 8; col++) {
-                if (Board.cells[row][col] != null && Board.game_board[row][col] != null) {
-                    Board.cells[row][col].getChildren().remove(Board.game_board[row][col].label);
-                }
+            parseBoardFromFEN(fenParts[0]);
+            setTurn(fenParts[1]);
+            setCastlingRights(fenParts[2]);
+            setEnPassantSquare(fenParts[3]);
+            try {
+                ChessGame.no_progress_moves = Integer.parseInt(fenParts[4]);
+                ChessGame.full_turns = Integer.parseInt(fenParts[5]);
+            } catch (NumberFormatException e) {
+                throw new IOException("Invalid numeric part in FEN string: " + e.getMessage());
             }
-        }
-
-        for (int row = 0; row < 8; row++) {
-            for (int col = 0; col < 8; col++) {
-                Board.game_board[row][col] = null;
-            }
-        }
-        List<Pair<Pieces, Coordinates>> piecesList = loadFromFile(new File(file));
-        for(Pair<Pieces, Coordinates> pair : piecesList){
-            Pieces piece = pair.first();
-            Coordinates<Integer, Integer> coordinates = pair.second();
-            Board.game_board[coordinates.getX()][coordinates.getY()] = piece;
-            piece.position = coordinates;
-            if(Board.cells[coordinates.getX()][coordinates.getY()] != null){
-                Board.cells[coordinates.getX()][coordinates.getY()].getChildren().add(piece.label);
-            }
-            piece.drawPiece(piece.color, piece.label);
+        } catch (IOException e) {
+            System.err.println("Error loading game: " + e.getMessage());
         }
     }
+
+    private void parseBoardFromFEN(String fenPart0) {
+        String[] ranks = fenPart0.split("/");
+        for (int row = 0; row < 8 && row < ranks.length; row++) {
+            String rank = ranks[row];
+            int col = 0;
+            for (int i = 0; i < rank.length(); i++) {
+                char c = rank.charAt(i);
+                if (Character.isDigit(c)) {
+                    int count = Character.getNumericValue(c);
+                    for (int j = 0; j < count && col < 8; j++) {
+                        Board.game_board[row][col++] = null;
+                    }
+                } else {
+                    PieceColor color = (Character.isLowerCase(c)) ? PieceColor.BLACK : PieceColor.WHITE;
+                    Label label = new Label();
+                    label.setStyle("-fx-font-size: 36px;");
+                    label.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+                    label.setAlignment(Pos.CENTER);
+                    char pieceChar = Character.toLowerCase(c);
+                    Pieces piece = null;
+                    switch (pieceChar) {
+                        case 'p' -> piece = new Pawn(color, label);
+                        case 'r' -> piece = new Rook(color, label);
+                        case 'n' -> piece = new Knight(color, label);
+                        case 'b' -> piece = new Bishop(color, label);
+                        case 'q' -> piece = new Queen(color, label);
+                        case 'k' -> piece = new King(color, label);
+                    }
+                    if (piece != null) {
+                        Board.game_board[row][col] = piece;
+                        piece.setPosition(row, col);
+                        col++;
+                    }
+                }
+            }
+            while (col < 8) {
+                Board.game_board[row][col++] = null;
+            }
+        }
+    }
+
+    private void setTurn(String turnStr) {
+        if ("w".equals(turnStr)) {
+            Board.turn.player = PieceColor.WHITE;
+        } else if ("b".equals(turnStr)) {
+            Board.turn.player = PieceColor.BLACK;
+        } else {
+            throw new RuntimeException("Invalid turn in FEN string: " + turnStr);
+        }
+    }
+
+    private void setCastlingRights(String castlingStr) {
+        for (int colorIdx = 0; colorIdx < 2; colorIdx++) {
+            PieceColor color = (colorIdx == 0) ? PieceColor.WHITE : PieceColor.BLACK;
+            int kingRow = (color == PieceColor.WHITE) ? 7 : 0;
+            Pieces king = Board.game_board[kingRow][4];
+            if (king instanceof King) ((King) king).moved = true;
+            Pieces rookK = Board.game_board[kingRow][7];
+            if (rookK instanceof Rook) ((Rook) rookK).moved = true;
+            Pieces rookQ = Board.game_board[kingRow][0];
+            if (rookQ instanceof Rook) ((Rook) rookQ).moved = true;
+        }
+        if (castlingStr.contains("K")) handleCastlingKingside(PieceColor.WHITE);
+        if (castlingStr.contains("Q")) handleCastlingQueenside(PieceColor.WHITE);
+        if (castlingStr.contains("k")) handleCastlingKingside(PieceColor.BLACK);
+        if (castlingStr.contains("q")) handleCastlingQueenside(PieceColor.BLACK);
+    }
+
+    private void handleCastlingKingside(PieceColor color) {
+        int kingRow = (color == PieceColor.WHITE) ? 7 : 0;
+        Pieces king = Board.game_board[kingRow][4];
+        Pieces rook = Board.game_board[kingRow][7];
+        if (king instanceof King && king.color == color) ((King) king).moved = false;
+        if (rook instanceof Rook && rook.color == color) ((Rook) rook).moved = false;
+    }
+
+    private void handleCastlingQueenside(PieceColor color) {
+        int kingRow = (color == PieceColor.WHITE) ? 7 : 0;
+        Pieces king = Board.game_board[kingRow][4];
+        Pieces rook = Board.game_board[kingRow][0];
+        if (king instanceof King && king.color == color) ((King) king).moved = false;
+        if (rook instanceof Rook && rook.color == color) ((Rook) rook).moved = false;
+    }
+
+    private void setEnPassantSquare(String epStr) {
+        Pawn.epList.clear();
+        if (!"-".equals(epStr) && epStr.length() == 2) {
+            char file = epStr.charAt(0);
+            int rank = Character.getNumericValue(epStr.charAt(1));
+            int row = 8 - rank;
+            int col = file - 'a';
+            if (row >= 0 && row < 8 && col >= 0 && col < 8) {
+                Pawn.epList.add(new Coordinates<>(row, col));
+            }
+        }
+    }
+
 
     static void updateHashList(Long hash){
         if(Board.hashList.size()>9){
@@ -297,52 +356,26 @@ public class ChessGame {
         Board.hashList.add(hash);
     }
 
-    static void savePiecesAdditionalInfo(){
-        Coordinates white_king_pos = Pieces.findFigure(King.class, PieceColor.WHITE);
-        Coordinates black_king_pos = Pieces.findFigure(King.class, PieceColor.BLACK);
-        Pieces white_king = Board.game_board[white_king_pos.getX()][white_king_pos.getY()];
-        Pieces black_king = Board.game_board[black_king_pos.getX()][black_king_pos.getY()];
-        Coordinates movedByTwoPawn = null;
-        for(Pieces[] row : Board.game_board){
-            for(Pieces piece : row){
-                if(piece instanceof Pawn){
-                    if(((Pawn) piece).movedByTwo){
-                        movedByTwoPawn = piece.position;
-                    }
-                }
-            }
-        }
-        try (PrintWriter writer = new PrintWriter("KingPawnInfo.txt")) {
-            writer.println(((King)white_king).moved + " " + ((King)black_king).moved + " " + movedByTwoPawn.getX() + " " + movedByTwoPawn.getY());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    void promotion(Pieces newPiece, int row, int col, Pawn oldPawn) {
+        Board.game_board[row][col] = newPiece;
+        newPiece.position = new Coordinates<>(row, col);
+        newPiece.setPosition(row, col);
+        Board.cells[row][col].getChildren().remove(oldPawn.label);
+        Board.cells[row][col].getChildren().add(newPiece.label);
+        System.out.println(newPiece.position);
     }
 
-    static void loadPiecesAdditionalInfo(){
-        Coordinates white_king_pos = Pieces.findFigure(King.class, PieceColor.WHITE);
-        Coordinates black_king_pos = Pieces.findFigure(King.class, PieceColor.BLACK);
-        Pieces white_king = Board.game_board[white_king_pos.getX()][white_king_pos.getY()];
-        Pieces black_king = Board.game_board[black_king_pos.getX()][black_king_pos.getY()];
-        try (Scanner scanner = new Scanner(new File("KingPawnInfo.txt"))) {
-            if (scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                String[] parts = line.split(" ");
-                if (parts.length >= 4) {
-                    ((King)white_king).moved = Boolean.parseBoolean(parts[0]);
-                    ((King)black_king).moved = Boolean.parseBoolean(parts[1]);
-                    if(!parts[2].equals("null") && !parts[3].equals("null")){
-                        int pawnRow = Integer.parseInt(parts[2]);
-                        int pawnCol = Integer.parseInt(parts[3]);
-                        Pieces piece = Board.game_board[pawnRow][pawnCol];
-                        if(piece instanceof Pawn){
-                            ((Pawn) piece).movedByTwo = true;
-                        }
-                    }
-                }
+    boolean checkForPromotion(Pieces piece){
+        if(piece instanceof Pawn){
+            if(piece.color == PieceColor.WHITE && piece.position.getX() == 0){
+                return true;
             }
-        } catch (FileNotFoundException | NumberFormatException e) {
-            e.printStackTrace();
+            if(piece.color == PieceColor.BLACK && piece.position.getX() == 7){
+                return true;
+            }
         }
+        return false;
     }
+
+
 }

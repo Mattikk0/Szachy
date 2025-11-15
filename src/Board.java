@@ -1,16 +1,22 @@
 import javafx.geometry.HPos;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.Window;
 
 
 import java.util.ArrayList;
@@ -37,6 +43,7 @@ public class Board extends GridPane {
     public Board(ChessGame game) {
         this.game = game;
         drawBoard();
+        Board.whole_board.saveToFile();
         Board.board_hash = ChessGame.hashBoardToNumber();
         System.out.println(Board.board_hash);
     }
@@ -143,8 +150,7 @@ public class Board extends GridPane {
                 if(this.game.new_game) {
                     drawPiecesNewGame(label, row, col);
                 }else{
-                    game.loadGame("SavedGame.txt");
-                    turn.loadAdditionalInfo();
+                    game.loadGameFromFile("SavedGame.pgn");
                 }
 
                 Rectangle square = new Rectangle(TILE_SIZE, TILE_SIZE);
@@ -183,6 +189,9 @@ public class Board extends GridPane {
                     for (Coordinates<Integer, Integer> coord : lastClickedPiece.moveList) {
                         if (coord.getX() == finalRow && coord.getY() == finalCol) {
                             game.move(finalRow, finalCol, lastClickedPiece, tempRow, tempCol, lastClickedPiece.color, current);
+                            if(game.checkForPromotion(lastClickedPiece)) {
+                                drawPromotionChoosingScreen((Pawn) lastClickedPiece, finalRow, finalCol);
+                            }
                             turn.changeTurn();
 
                             for (Pieces[] pieces : game_board) {
@@ -199,6 +208,9 @@ public class Board extends GridPane {
                     for (Coordinates<Integer, Integer> coord : lastClickedPiece.takesList) {
                         if (coord.getX() == finalRow && coord.getY() == finalCol) {
                             game.move(finalRow, finalCol, lastClickedPiece, tempRow, tempCol, lastClickedPiece.color, current);
+                            if(game.checkForPromotion(lastClickedPiece)) {
+                                drawPromotionChoosingScreen((Pawn) lastClickedPiece, finalRow, finalCol);
+                            }
                             turn.changeTurn();
                             for (Pieces[] pieces : game_board) {
                                 for (Pieces piece : pieces) {
@@ -270,4 +282,82 @@ public class Board extends GridPane {
         }
     }
 
+    void drawPromotionChoosingScreen(Pawn pawn, int row, int col) {
+        if (pawn == null) return;
+        Window owner = this.getScene() != null ? this.getScene().getWindow() : null;
+
+        Stage dialog = new Stage();
+        if (owner != null) dialog.initOwner(owner);
+        dialog.initModality(Modality.APPLICATION_MODAL);
+
+        HBox box = new HBox(12);
+        box.setPadding(new Insets(12));
+        box.setAlignment(Pos.CENTER);
+
+        PieceColor color = pawn.color;
+        String queenGlyph = color == PieceColor.WHITE ? "♕" : "♛";
+        String rookGlyph  = color == PieceColor.WHITE ? "♖" : "♜";
+        String bishopGlyph= color == PieceColor.WHITE ? "♗" : "♝";
+        String knightGlyph= color == PieceColor.WHITE ? "♘" : "♞";
+
+        Button bQueen = createPromoButton(queenGlyph, 48);
+        Button bRook  = createPromoButton(rookGlyph, 48);
+        Button bBishop= createPromoButton(bishopGlyph, 48);
+        Button bKnight= createPromoButton(knightGlyph, 48);
+
+        bQueen.setOnAction(e -> {
+            game.promotion(new Queen(color, getCellLabel(row, col)), row, col, pawn);
+            dialog.close();
+        });
+        bRook.setOnAction(e -> {
+            game.promotion(new Rook(color, getCellLabel(row, col)), row, col, pawn);
+            dialog.close();
+        });
+        bBishop.setOnAction(e -> {
+            game.promotion(new Bishop(color, getCellLabel(row, col)), row, col, pawn);
+            dialog.close();
+        });
+        bKnight.setOnAction(e -> {
+            game.promotion(new Knight(color, getCellLabel(row, col)), row, col, pawn);
+            dialog.close();
+        });
+        Scene scene = new Scene(box);
+        scene.setOnKeyPressed((KeyEvent ke) -> {
+            if (ke.getCode() == KeyCode.F4 && ke.isAltDown()) {
+                game.promotion(new Queen(color, getCellLabel(row, col)), row, col, pawn);
+                dialog.close();
+                ke.consume();
+            }
+        });
+        dialog.setOnCloseRequest(ev -> {
+            game.promotion(new Queen(color, getCellLabel(row, col)), row, col, pawn);
+        });
+
+
+        box.getChildren().addAll(bQueen, bRook, bBishop, bKnight);
+        dialog.setScene(scene);
+        dialog.setTitle("Promocja pionka");
+        dialog.setResizable(false);
+        dialog.showAndWait();
+    }
+    private Button createPromoButton(String glyph, int fontSize) {
+        Button b = new Button(glyph);
+        b.setStyle("-fx-font-size: " + fontSize + "px; -fx-background-color: transparent;");
+        b.setMinSize(64, 64);
+        return b;
+    }
+    private Label getCellLabel(int row, int col) {
+        StackPane cell = cells[row][col];
+        for (javafx.scene.Node n : cell.getChildren()) {
+            if (n instanceof Label) return (Label) n;
+        }
+        Label l = new Label();
+        l.setStyle("-fx-font-size: 36px;");
+        l.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        l.setAlignment(Pos.CENTER);
+        GridPane.setHalignment(l, HPos.CENTER);
+        GridPane.setValignment(l, VPos.CENTER);
+        cell.getChildren().add(l);
+        return l;
+    }
 }

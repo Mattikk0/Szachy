@@ -14,7 +14,7 @@ public class Pawn extends Pieces{
     }
     public boolean did_ep;
     public boolean movedByTwo;
-    public List<Coordinates<Integer, Integer>> epList = new ArrayList<>();
+    public static List<Coordinates<Integer, Integer>> epList = new ArrayList<>();
     @Override
     public void legalMoves(int row, int col) {
         if(this.color == PieceColor.WHITE){
@@ -71,7 +71,7 @@ public class Pawn extends Pieces{
 
     @Override
     boolean isChecking() {
-        Coordinates king_position = null;
+        Coordinates king_position;
         king_position = findFigure(King.class, this.color.oppositeColor());
         if(this.color == PieceColor.WHITE){
             if((king_position.getX() == this.position.getX() - 1 && king_position.getY() == this.position.getY()-1) || (king_position.getX() == this.position.getX()-1 && king_position.getY() == this.position.getY()+1)){

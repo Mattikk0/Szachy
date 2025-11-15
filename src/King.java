@@ -242,7 +242,6 @@ public class King extends Pieces{
                 if (piece != null && piece.color != this.color) {
                     if(piece.isChecking()){
                         this.isChecked = true;
-                        ChessGame.no_progress_moves = 0;
                         break;
                     }
                 }

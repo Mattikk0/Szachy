@@ -37,3 +37,9 @@ Wersja 1.5
 (m) Zapisywanie po każdym ruchu zamiast po kliknięciu klawisza "s".
 
 (?) Wstępnie zrobione: zapisywanie informacji który pionek ruszył się o 2 pola i czy król został ruszony (do roszady ale trzeba dodać czy wieże zostały ruszone).
+
+Wersja 1.6
+
+(m) Zmieniony zapis gry na zapis w pliku .pgn w formacie notacji FEN (Do poprawy bo wczytywanie nie działa, sprawdzić zapis en Passant i roszady)
+
+(+) Promocja pionka
