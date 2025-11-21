@@ -23,21 +23,13 @@ public class GameState {
 
     boolean queenSideCastling(PieceColor color){
         Coordinates<Integer, Integer> kingPos = Pieces.findFigure(King.class, color);
-        Pieces rookQueenSide = null;
         if (kingPos == null) {
             return false;
         }
-        if(color == PieceColor.WHITE){
-            if(Board.game_board[0][7] != null) {
-                rookQueenSide = Board.game_board[0][0];
-            }
-        }else{
-            if(Board.game_board[7][7] != null) {
-                rookQueenSide = Board.game_board[7][0];
-            }
-        }
+        int row = (color == PieceColor.WHITE) ? 7 : 0;
+        Pieces rookQueenSide = Board.game_board[row][0];
         Pieces king = Board.game_board[kingPos.getX()][kingPos.getY()];
-        if(rookQueenSide != null && !((King) king).moved){
+        if (rookQueenSide != null && king instanceof King && !((King) king).moved){
             if(rookQueenSide instanceof Rook && !((Rook) rookQueenSide).moved) {
                 return true;
             }
@@ -47,21 +39,13 @@ public class GameState {
 
     boolean kingsideCastlingRights(PieceColor color){
         Coordinates<Integer, Integer> kingPos = Pieces.findFigure(King.class, color);
-        Pieces rookKingSide = null;
         if (kingPos == null) {
             return false;
         }
-        if(color == PieceColor.WHITE){
-            if(Board.game_board[0][7] != null) {
-                rookKingSide = Board.game_board[0][7];
-            }
-        }else{
-            if(Board.game_board[7][7] != null) {
-                rookKingSide = Board.game_board[7][7];
-            }
-        }
+        int row = (color == PieceColor.WHITE) ? 7 : 0;
+        Pieces rookKingSide = Board.game_board[row][7];
         Pieces king = Board.game_board[kingPos.getX()][kingPos.getY()];
-        if(rookKingSide != null && !((King) king).moved){
+        if (rookKingSide != null && king instanceof King && !((King) king).moved){
             if(rookKingSide instanceof Rook && !((Rook) rookKingSide).moved) {
                 return true;
             }
@@ -106,8 +90,8 @@ public class GameState {
         }
         fen.append(" ");
         fen.append(Board.turn.player == PieceColor.WHITE ? 'w' : 'b');
-        String castling = "";
-        if (kingsideCastlingRights(PieceColor.WHITE)) castling += " K";
+        String castling = " ";
+        if (kingsideCastlingRights(PieceColor.WHITE)) castling += "K";
         if (queenSideCastling(PieceColor.WHITE)) castling += "Q";
         if (kingsideCastlingRights(PieceColor.BLACK)) castling += "k";
         if (queenSideCastling(PieceColor.BLACK)) castling += "q";

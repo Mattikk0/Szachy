@@ -12,7 +12,7 @@ public class Turn {
         this.player = PieceColor.WHITE;
         Board.current = whitePlayer;
     }
-    void changeTurn(){
+    void changeTurn() throws IOException, InterruptedException {
         if(this.player == PieceColor.WHITE){
             this.player = PieceColor.BLACK;
             Board.current = blackPlayer;

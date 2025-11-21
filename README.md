@@ -30,7 +30,7 @@ Wersja 1.4
 
 Wersja 1.5
 
-(+) pat(50 ruchów bez bicia/szacha, 3 powtórzenia pozycji, brak materiału do mata), zapisywanie dodatkowych informacji o stanie partii (licznik ruchów bez bicia/szacha, tura gracza, punkty materiału graczy)
+(+) pat(50 ruchów bez bicia, 3 powtórzenia pozycji, brak materiału do mata), zapisywanie dodatkowych informacji o stanie partii (licznik ruchów bez bicia/szacha, tura gracza, punkty materiału graczy)
 
 (-) usunięta metoda getState() w GameState.
 
@@ -43,3 +43,9 @@ Wersja 1.6
 (m) Zmieniony zapis gry na zapis w pliku .pgn w formacie notacji FEN (Do poprawy bo wczytywanie nie działa, sprawdzić zapis en Passant i roszady)
 
 (+) Promocja pionka
+
+Wersja 1.7
+
+(+) Zrobione podstawowe menu z wyborem nowej gry/wczytywania gry (GUI - tkinter), do połowy zrobione menu końcowe, do zrobienia jest restart gry po zakończeniu.
+
+(m) Wczytywanie z pliku .pgn, poprawione wczytywanie en Passant

@@ -19,6 +19,7 @@ import javafx.stage.Stage;
 import javafx.stage.Window;
 
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -40,12 +41,13 @@ public class Board extends GridPane {
     static Turn turn = new Turn();
     static GameState current = new GameState();
     static GameState whole_board = new GameState();
+    private boolean loaded_game = false;
+
     public Board(ChessGame game) {
         this.game = game;
         drawBoard();
         Board.whole_board.saveToFile();
         Board.board_hash = ChessGame.hashBoardToNumber();
-        System.out.println(Board.board_hash);
     }
 
     static void drawPiecesNewGame(Label label, int row, int col) {
@@ -138,6 +140,8 @@ public class Board extends GridPane {
         }
     }
 
+
+
     void drawBoard() {
         for (int row = 0; row < ROWS; row++) {
             for (int col = 0; col < COLS; col++) {
@@ -147,12 +151,15 @@ public class Board extends GridPane {
                 label.setAlignment(Pos.CENTER);
                 GridPane.setHalignment(label, HPos.CENTER);
                 GridPane.setValignment(label, VPos.CENTER);
+
                 if(this.game.new_game) {
                     drawPiecesNewGame(label, row, col);
                 }else{
-                    game.loadGameFromFile("SavedGame.pgn");
+                    if(!loaded_game) {
+                        game.loadGameFromFile("SavedGame.pgn");
+                        loaded_game = true;
+                    }
                 }
-
                 Rectangle square = new Rectangle(TILE_SIZE, TILE_SIZE);
                 boolean isLight = (row + col) % 2 == 0;
                 square.setFill(isLight ? Color.BEIGE : Color.SADDLEBROWN);
@@ -192,7 +199,13 @@ public class Board extends GridPane {
                             if(game.checkForPromotion(lastClickedPiece)) {
                                 drawPromotionChoosingScreen((Pawn) lastClickedPiece, finalRow, finalCol);
                             }
-                            turn.changeTurn();
+                            try {
+                                turn.changeTurn();
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            } catch (InterruptedException e) {
+                                throw new RuntimeException(e);
+                            }
 
                             for (Pieces[] pieces : game_board) {
                                 for (Pieces piece : pieces) {
@@ -211,7 +224,13 @@ public class Board extends GridPane {
                             if(game.checkForPromotion(lastClickedPiece)) {
                                 drawPromotionChoosingScreen((Pawn) lastClickedPiece, finalRow, finalCol);
                             }
-                            turn.changeTurn();
+                            try {
+                                turn.changeTurn();
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            } catch (InterruptedException e) {
+                                throw new RuntimeException(e);
+                            }
                             for (Pieces[] pieces : game_board) {
                                 for (Pieces piece : pieces) {
                                     if (piece instanceof Pawn && Objects.equals(piece.color, turn.player)) {
@@ -225,6 +244,25 @@ public class Board extends GridPane {
                 });
                 cell.getChildren().addAll(square, label);
                 this.add(cell, col, row);
+                refreshBoard();
+            }
+        }
+    }
+
+    public void refreshBoard() {
+        if (Board.cells == null) return;
+
+        for (int r = 0; r < 8; r++) {
+            for (int c = 0; c < 8; c++) {
+
+                if (cells[r][c] == null) continue;
+
+                cells[r][c].getChildren().removeIf(node -> node instanceof Label);
+
+                Pieces piece = game_board[r][c];
+                if (piece != null) {
+                    cells[r][c].getChildren().add(piece.label);
+                }
             }
         }
     }

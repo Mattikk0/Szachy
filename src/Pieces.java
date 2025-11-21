@@ -15,7 +15,7 @@ public abstract class Pieces {
     abstract void legalTakes(int row, int col);
     abstract void drawPiece(PieceColor color, Label label);
     abstract boolean isChecking();
-    boolean isOutOfBoard(int row, int col) {
+    static boolean isOutOfBoard(int row, int col) {
         return row > 7 || row < 0 || col > 7 || col < 0;
     }
     public void setPosition(int newRow, int newCol){
@@ -31,6 +31,7 @@ public abstract class Pieces {
         if(Board.cells[newRow][newCol] != null){
             Board.cells[newRow][newCol].getChildren().remove(this.label);
         }
+        this.position = new Coordinates<>(newRow, newCol);
         Board.cells[newRow][newCol].getChildren().add(this.label);
         this.drawPiece(this.color, this.label);
     }

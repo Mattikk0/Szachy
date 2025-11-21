@@ -1,5 +1,8 @@
+import javafx.geometry.HPos;
 import javafx.geometry.Pos;
+import javafx.geometry.VPos;
 import javafx.scene.control.Label;
+import javafx.scene.layout.GridPane;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -8,10 +11,10 @@ import java.io.PrintWriter;
 import java.util.*;
 
 public class ChessGame {
-    boolean new_game = true;
+    boolean new_game;
+    static String winner;
     public static int no_progress_moves = 0;
     public static int full_turns = 0;
-
     void showLegalMoves(Pieces piece, int row, int col) {
         piece.moveList.clear();
         showLegalTakes(piece, row, col);
@@ -109,17 +112,33 @@ public class ChessGame {
         return true;
     }
 
-    static boolean checkIfCheckmate(PieceColor king_color) {
+    static boolean checkIfCheckmate(PieceColor king_color) throws IOException, InterruptedException {
         King king = (King) Board.game_board[Pieces.findFigure(King.class, king_color).getX()][Pieces.findFigure(King.class, king_color).getY()];
         if (king.isChecked && checkIfGameOver(king_color)) {
+            winner = king_color.oppositeColor().toString();
+            EndMenu endMenu = new EndMenu();
+            endMenu.launchMenu(winner);
+            if(endMenu.restart){
+                /// tutaj restart
+            }else{
+                System.exit(0);
+            }
             return true;
         }
         return false;
     }
 
-    static boolean checkIfStalemate(PieceColor king_color) {
+    static boolean checkIfStalemate(PieceColor king_color) throws IOException, InterruptedException {
         King king = (King) Board.game_board[Pieces.findFigure(King.class, king_color).getX()][Pieces.findFigure(King.class, king_color).getY()];
         if (!king.isChecked && (checkIfGameOver(king_color) || noProgressStalemate() || repetitionStalemate() || insufficientMaterialStalemate())) {
+            winner = null;
+            EndMenu endMenu = new EndMenu();
+            endMenu.launchMenu(winner);
+            if(endMenu.restart){
+                //tutaj restart
+            }else{
+                System.exit(0);
+            }
             return true;
         }
         return false;
@@ -236,10 +255,11 @@ public class ChessGame {
             if (fenParts.length < 6) {
                 throw new IOException("Invalid FEN string: insufficient parts");
             }
+
             parseBoardFromFEN(fenParts[0]);
             setTurn(fenParts[1]);
             setCastlingRights(fenParts[2]);
-            setEnPassantSquare(fenParts[3]);
+            setEnPassantSquare(fenParts[3], Board.turn.player);
             try {
                 ChessGame.no_progress_moves = Integer.parseInt(fenParts[4]);
                 ChessGame.full_turns = Integer.parseInt(fenParts[5]);
@@ -253,9 +273,11 @@ public class ChessGame {
 
     private void parseBoardFromFEN(String fenPart0) {
         String[] ranks = fenPart0.split("/");
-        for (int row = 0; row < 8 && row < ranks.length; row++) {
-            String rank = ranks[row];
+        for (int r = 0; r < 8 && r < ranks.length; r++) {
+            String rank = ranks[r];
             int col = 0;
+            int row = r;
+
             for (int i = 0; i < rank.length(); i++) {
                 char c = rank.charAt(i);
                 if (Character.isDigit(c)) {
@@ -269,6 +291,8 @@ public class ChessGame {
                     label.setStyle("-fx-font-size: 36px;");
                     label.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
                     label.setAlignment(Pos.CENTER);
+                    GridPane.setHalignment(label, HPos.CENTER);
+                    GridPane.setValignment(label, VPos.CENTER);
                     char pieceChar = Character.toLowerCase(c);
                     Pieces piece = null;
                     switch (pieceChar) {
@@ -281,16 +305,14 @@ public class ChessGame {
                     }
                     if (piece != null) {
                         Board.game_board[row][col] = piece;
-                        piece.setPosition(row, col);
+                        piece.position = new Coordinates<>(row, col);;
                         col++;
                     }
                 }
             }
-            while (col < 8) {
-                Board.game_board[row][col++] = null;
-            }
         }
     }
+
 
     private void setTurn(String turnStr) {
         if ("w".equals(turnStr)) {
@@ -335,7 +357,7 @@ public class ChessGame {
         if (rook instanceof Rook && rook.color == color) ((Rook) rook).moved = false;
     }
 
-    private void setEnPassantSquare(String epStr) {
+    private void setEnPassantSquare(String epStr, PieceColor currentTurn) {
         Pawn.epList.clear();
         if (!"-".equals(epStr) && epStr.length() == 2) {
             char file = epStr.charAt(0);
@@ -344,6 +366,35 @@ public class ChessGame {
             int col = file - 'a';
             if (row >= 0 && row < 8 && col >= 0 && col < 8) {
                 Pawn.epList.add(new Coordinates<>(row, col));
+            }
+        }
+        if(currentTurn == PieceColor.WHITE){
+            if(!Pawn.epList.isEmpty()){
+                if(!Pieces.isOutOfBoard(Pawn.epList.get(0).getX()-1, Pawn.epList.get(0).getY()-1) && Board.game_board[Pawn.epList.get(0).getX()-1][Pawn.epList.get(0).getY()-1] != null && Board.game_board[Pawn.epList.get(0).getX()-1][Pawn.epList.get(0).getY()-1] instanceof Pawn){
+                    Pawn pawn = (Pawn) Board.game_board[Pawn.epList.get(0).getX()-1][Pawn.epList.get(0).getY() - 1];
+                    Pawn opp_pawn = (Pawn) Board.game_board[Pawn.epList.get(0).getX() + 1][Pawn.epList.get(0).getY()];
+                    opp_pawn.movedByTwo = true;
+                    pawn.did_ep = false;
+                } else if(!Pieces.isOutOfBoard(Pawn.epList.get(0).getX()-1, Pawn.epList.get(0).getY()+1) && Board.game_board[Pawn.epList.get(0).getX()-1][Pawn.epList.get(0).getY()+1] != null && Board.game_board[Pawn.epList.get(0).getX()-1][Pawn.epList.get(0).getY()+1] instanceof Pawn){
+                    Pawn pawn = (Pawn) Board.game_board[Pawn.epList.get(0).getX()-1][Pawn.epList.get(0).getY() + 1];
+                    Pawn opp_pawn = (Pawn) Board.game_board[Pawn.epList.get(0).getX() + 1][Pawn.epList.get(0).getY()];
+                    opp_pawn.movedByTwo = true;
+                    pawn.did_ep = false;
+                }
+            }
+        }else {
+            if(!Pawn.epList.isEmpty()){
+                if(!Pieces.isOutOfBoard(Pawn.epList.get(0).getX()+1, Pawn.epList.get(0).getY()-1)&& Board.game_board[Pawn.epList.get(0).getX()+1][Pawn.epList.get(0).getY()-1] != null && Board.game_board[Pawn.epList.get(0).getX()+1][Pawn.epList.get(0).getY()-1] instanceof Pawn){
+                    Pawn pawn = (Pawn) Board.game_board[Pawn.epList.get(0).getX()+1][Pawn.epList.get(0).getY() - 1];
+                    Pawn opp_pawn = (Pawn) Board.game_board[Pawn.epList.get(0).getX() - 1][Pawn.epList.get(0).getY()];
+                    opp_pawn.movedByTwo = true;
+                    pawn.did_ep = false;
+                } else if(!Pieces.isOutOfBoard(Pawn.epList.get(0).getX()+1, Pawn.epList.get(0).getY()+1) && Board.game_board[Pawn.epList.get(0).getX()+1][Pawn.epList.get(0).getY()+1] != null && Board.game_board[Pawn.epList.get(0).getX()+1][Pawn.epList.get(0).getY()+1] instanceof Pawn){
+                    Pawn pawn = (Pawn) Board.game_board[Pawn.epList.get(0).getX()+1][Pawn.epList.get(0).getY() + 1];
+                    Pawn opp_pawn = (Pawn) Board.game_board[Pawn.epList.get(0).getX() - 1][Pawn.epList.get(0).getY()];
+                    opp_pawn.movedByTwo = true;
+                    pawn.did_ep = false;
+                }
             }
         }
     }
