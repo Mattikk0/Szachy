@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
 
+import static java.lang.System.exit;
+
 public class ChessGame {
     boolean new_game;
     static String winner;
@@ -116,13 +118,24 @@ public class ChessGame {
         King king = (King) Board.game_board[Pieces.findFigure(King.class, king_color).getX()][Pieces.findFigure(King.class, king_color).getY()];
         if (king.isChecked && checkIfGameOver(king_color)) {
             winner = king_color.oppositeColor().toString();
-            EndMenu endMenu = new EndMenu();
-            endMenu.launchMenu(winner);
-            if(endMenu.restart){
-                /// tutaj restart
-            }else{
-                System.exit(0);
-            }
+            java.util.concurrent.Callable<Void> task = () -> {
+                try {
+                    //Thread.sleep(1000);
+                    EndMenu endMenu = new EndMenu();
+                    endMenu.launchMenu(winner);
+                    if (endMenu.restart) {
+                        endMenu.restartGame();
+                    } else {
+                        exit(0);
+                    }
+                } catch (InterruptedException | IOException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            };
+            java.util.concurrent.ExecutorService executor = java.util.concurrent.Executors.newSingleThreadExecutor();
+            executor.submit(task);
+            executor.shutdown();
             return true;
         }
         return false;
@@ -131,14 +144,25 @@ public class ChessGame {
     static boolean checkIfStalemate(PieceColor king_color) throws IOException, InterruptedException {
         King king = (King) Board.game_board[Pieces.findFigure(King.class, king_color).getX()][Pieces.findFigure(King.class, king_color).getY()];
         if (!king.isChecked && (checkIfGameOver(king_color) || noProgressStalemate() || repetitionStalemate() || insufficientMaterialStalemate())) {
-            winner = null;
-            EndMenu endMenu = new EndMenu();
-            endMenu.launchMenu(winner);
-            if(endMenu.restart){
-                //tutaj restart
-            }else{
-                System.exit(0);
-            }
+            winner = "null";
+            java.util.concurrent.Callable<Void> task = () -> {
+                try {
+                    //Thread.sleep(1000);
+                    EndMenu endMenu = new EndMenu();
+                    endMenu.launchMenu(winner);
+                    if (endMenu.restart) {
+                        endMenu.restartGame();
+                    } else {
+                        exit(0);
+                    }
+                } catch (InterruptedException | IOException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            };
+            java.util.concurrent.ExecutorService executor = java.util.concurrent.Executors.newSingleThreadExecutor();
+            executor.submit(task);
+            executor.shutdown();
             return true;
         }
         return false;
@@ -246,28 +270,44 @@ public class ChessGame {
     }
 
 
-    void loadGameFromFile(String file_name) {
-        try {
-            Scanner scanner = new Scanner(new File(file_name));
-            String fenString = scanner.nextLine().trim();
-            scanner.close();
-            String[] fenParts = fenString.split(" ");
-            if (fenParts.length < 6) {
-                throw new IOException("Invalid FEN string: insufficient parts");
-            }
+    void loadGameFromFile(String file_name) throws IOException, InterruptedException {
+        ErrorMenu errorMenu = new ErrorMenu();
+        File file = new File(file_name);
+        errorMenu.can_load = file.exists();
+        if(!errorMenu.can_load || file.length() == 0){
+            errorMenu.launchMenu("no_file");
+            errorMenu.launchStartMenu();
+        }else {
 
-            parseBoardFromFEN(fenParts[0]);
-            setTurn(fenParts[1]);
-            setCastlingRights(fenParts[2]);
-            setEnPassantSquare(fenParts[3], Board.turn.player);
             try {
-                ChessGame.no_progress_moves = Integer.parseInt(fenParts[4]);
-                ChessGame.full_turns = Integer.parseInt(fenParts[5]);
-            } catch (NumberFormatException e) {
-                throw new IOException("Invalid numeric part in FEN string: " + e.getMessage());
+                Scanner scanner = new Scanner(new File(file_name));
+                String fenString = scanner.nextLine().trim();
+                scanner.close();
+                String[] fenParts = fenString.split(" ");
+                if (fenParts.length < 6) {
+                    throw new IOException("Invalid FEN string: insufficient parts");
+                }
+
+                setTurn(fenParts[1]);
+                if(Board.turn.player == null){
+                    errorMenu.launchMenu("game_over");
+                    if(!errorMenu.load_finished_game){
+                        errorMenu.launchStartMenu();
+                        return;
+                    }
+                }
+                parseBoardFromFEN(fenParts[0]);
+                setCastlingRights(fenParts[2]);
+                setEnPassantSquare(fenParts[3], Board.turn.player);
+                try {
+                    ChessGame.no_progress_moves = Integer.parseInt(fenParts[4]);
+                    ChessGame.full_turns = Integer.parseInt(fenParts[5]);
+                } catch (NumberFormatException e) {
+                    throw new IOException("Invalid numeric part in FEN string: " + e.getMessage());
+                }
+            } catch (IOException e) {
+                System.err.println("Error loading game: " + e.getMessage());
             }
-        } catch (IOException e) {
-            System.err.println("Error loading game: " + e.getMessage());
         }
     }
 
@@ -319,6 +359,8 @@ public class ChessGame {
             Board.turn.player = PieceColor.WHITE;
         } else if ("b".equals(turnStr)) {
             Board.turn.player = PieceColor.BLACK;
+        } else if("null".equals(turnStr)){
+            Board.turn.player = null;
         } else {
             throw new RuntimeException("Invalid turn in FEN string: " + turnStr);
         }

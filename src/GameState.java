@@ -89,7 +89,7 @@ public class GameState {
             }
         }
         fen.append(" ");
-        fen.append(Board.turn.player == PieceColor.WHITE ? 'w' : 'b');
+        fen.append(Board.turn.player == PieceColor.WHITE ? 'w' : Board.turn.player == PieceColor.BLACK ? 'b' : "null");
         String castling = " ";
         if (kingsideCastlingRights(PieceColor.WHITE)) castling += "K";
         if (queenSideCastling(PieceColor.WHITE)) castling += "Q";

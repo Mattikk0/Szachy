@@ -3,9 +3,18 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-public class EndMenu {
+import static java.lang.System.exit;
+
+public class EndMenu extends Menu {
     public boolean restart;
-    void launchMenu(String winner) throws InterruptedException, IOException {
+
+    @Override
+    public void launchMenu() {
+        throw new UnsupportedOperationException("Wywołaj launchMenu(String winner)");
+    }
+
+    @Override
+    public void launchMenu(String winner) throws InterruptedException, IOException, IOException {
         ProcessBuilder pb = new ProcessBuilder("python", "EndMenu.py", winner);
         pb.directory(new File("src"));
         Process p = pb.start();
@@ -16,4 +25,9 @@ public class EndMenu {
         p.waitFor();
         p.destroy();
     }
+
+    public void restartGame() throws IOException, InterruptedException {
+
+    }
+
 }

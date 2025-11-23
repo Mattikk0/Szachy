@@ -43,10 +43,10 @@ public class Board extends GridPane {
     static GameState whole_board = new GameState();
     private boolean loaded_game = false;
 
-    public Board(ChessGame game) {
+    public Board(ChessGame game) throws IOException, InterruptedException {
         this.game = game;
         drawBoard();
-        Board.whole_board.saveToFile();
+        Board.hashList.clear();
         Board.board_hash = ChessGame.hashBoardToNumber();
     }
 
@@ -121,6 +121,7 @@ public class Board extends GridPane {
                     break;
             }
         }
+        turn.player = PieceColor.WHITE;
     }
 
     static void drawMoves(Pieces piece) {
@@ -142,7 +143,7 @@ public class Board extends GridPane {
 
 
 
-    void drawBoard() {
+    void drawBoard() throws IOException, InterruptedException {
         for (int row = 0; row < ROWS; row++) {
             for (int col = 0; col < COLS; col++) {
                 Label label = new Label();
@@ -174,7 +175,6 @@ public class Board extends GridPane {
 
                 cell.setOnMouseClicked((MouseEvent event) -> {
                     removeDots();
-
                     Pieces clickedPiece = game_board[finalRow][finalCol];
 
                     if (clickedPiece != null && clickedPiece.color.equals(turn.player)) {
@@ -224,6 +224,7 @@ public class Board extends GridPane {
                             if(game.checkForPromotion(lastClickedPiece)) {
                                 drawPromotionChoosingScreen((Pawn) lastClickedPiece, finalRow, finalCol);
                             }
+                            Board.refreshBoard();
                             try {
                                 turn.changeTurn();
                             } catch (IOException e) {
@@ -249,7 +250,7 @@ public class Board extends GridPane {
         }
     }
 
-    public void refreshBoard() {
+    public static void refreshBoard() {
         if (Board.cells == null) return;
 
         for (int r = 0; r < 8; r++) {

@@ -31,15 +31,16 @@ public class Turn {
             }
         }
         if(ChessGame.checkIfCheckmate(this.player)){
-            System.out.println("Checkmate! " + (this.player == PieceColor.WHITE ? "Black" : "White") + " wins!");
+            clearTurn();
         } else if (ChessGame.checkIfStalemate(this.player)) {
-            System.out.println("Stalemate!");
+            clearTurn();
         }
         Board.board_hash = ChessGame.hashBoardToNumber();
-        System.out.println(ChessGame.no_progress_moves);
         Board.whole_board.getBoard(Board.game_board);
         Board.whole_board.saveToFile();
     }
-
+    public void clearTurn(){
+        this.player = null;
+    }
 
 }

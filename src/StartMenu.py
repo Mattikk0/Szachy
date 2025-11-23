@@ -18,8 +18,6 @@ def on_new_game(is_new):
     root.quit()
 
 root = tk.Tk()
-root.bind("<Alt-F4>", lambda e: None)
-root.protocol("WM_DELETE_WINDOW", lambda: None)
 
 window_width = 800
 window_height = 800

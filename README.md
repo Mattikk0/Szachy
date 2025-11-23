@@ -49,3 +49,9 @@ Wersja 1.7
 (+) Zrobione podstawowe menu z wyborem nowej gry/wczytywania gry (GUI - tkinter), do połowy zrobione menu końcowe, do zrobienia jest restart gry po zakończeniu.
 
 (m) Wczytywanie z pliku .pgn, poprawione wczytywanie en Passant
+
+Wersja 1.8
+
+(+) Menu do wyświetlania komunikatów (na razie 2 komunikaty: brak zapisanej gry, otwarcie zapisanej gry która została już ukończona), bez wyboru wczytania gry/rozpoczęcia nowej gry nie wyświetla się już plansza, do zrobienia dalej restart po zakończeniu gry.
+
+(m) poprawione wyświetlanie ostatniego ruchu przed końcem gry
