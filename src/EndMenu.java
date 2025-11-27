@@ -2,11 +2,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-
 import static java.lang.System.exit;
 
 public class EndMenu extends Menu {
-    public boolean restart;
+    public boolean restart = false;
 
     @Override
     public void launchMenu() {
@@ -26,8 +25,7 @@ public class EndMenu extends Menu {
         p.destroy();
     }
 
-    public void restartGame() throws IOException, InterruptedException {
 
-    }
+
 
 }

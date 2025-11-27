@@ -6,11 +6,13 @@ import java.util.Scanner;
 
 public class Turn {
     PieceColor player;
-    GameState whitePlayer =  new GameState();
-    GameState blackPlayer =  new GameState();
+    GameState whitePlayer =  GameState.getWhiteInstance();
+    GameState blackPlayer =  GameState.getBlackInstance();
     public Turn(){
         this.player = PieceColor.WHITE;
         Board.current = whitePlayer;
+        blackPlayer.is_bot = true;
+        whitePlayer.is_bot = false;
     }
     void changeTurn() throws IOException, InterruptedException {
         if(this.player == PieceColor.WHITE){
@@ -31,10 +33,13 @@ public class Turn {
             }
         }
         if(ChessGame.checkIfCheckmate(this.player)){
+            Board.game_over = true;
             clearTurn();
         } else if (ChessGame.checkIfStalemate(this.player)) {
+            Board.game_over = true;
             clearTurn();
         }
+        GameState.is_bot_static.set(Board.current.is_bot);
         Board.board_hash = ChessGame.hashBoardToNumber();
         Board.whole_board.getBoard(Board.game_board);
         Board.whole_board.saveToFile();

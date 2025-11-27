@@ -1,11 +1,27 @@
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GameState {
+public class GameState{
+    private static final GameState WHITE_INSTANCE = new GameState();
+    private static final GameState BLACK_INSTANCE = new GameState();
     List<Pair<Pieces, Coordinates>> piecesList = new ArrayList<>();
     int material;
+    //public BooleanProperty is_bot = new SimpleBooleanProperty(false);
+    public boolean is_bot;
+    public static BooleanProperty  is_bot_static = new SimpleBooleanProperty();
+
+    public static GameState getWhiteInstance() {
+        return WHITE_INSTANCE;
+    }
+
+    public static GameState getBlackInstance() {
+        return BLACK_INSTANCE;
+    }
 
 
     void getBoard(Pieces[][] board){

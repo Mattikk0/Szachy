@@ -17,7 +17,8 @@ import javafx.scene.shape.Rectangle;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
-
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -42,6 +43,7 @@ public class Board extends GridPane {
     static GameState current = new GameState();
     static GameState whole_board = new GameState();
     private boolean loaded_game = false;
+    public static boolean game_over = false;
 
     public Board(ChessGame game) throws IOException, InterruptedException {
         this.game = game;
@@ -153,10 +155,10 @@ public class Board extends GridPane {
                 GridPane.setHalignment(label, HPos.CENTER);
                 GridPane.setValignment(label, VPos.CENTER);
 
-                if(this.game.new_game) {
+                if (this.game.new_game) {
                     drawPiecesNewGame(label, row, col);
-                }else{
-                    if(!loaded_game) {
+                } else {
+                    if (!loaded_game) {
                         game.loadGameFromFile("SavedGame.pgn");
                         loaded_game = true;
                     }
@@ -169,85 +171,109 @@ public class Board extends GridPane {
 
                 int finalRow = row;
                 int finalCol = col;
-
                 StackPane cell = new StackPane();
-                cells[row][col] = cell;
-
-                cell.setOnMouseClicked((MouseEvent event) -> {
-                    removeDots();
-                    Pieces clickedPiece = game_board[finalRow][finalCol];
-
-                    if (clickedPiece != null && clickedPiece.color.equals(turn.player)) {
-                        lastClickedPiece = clickedPiece;
-                        tempRow = finalRow;
-                        tempCol = finalCol;
-                        game.showLegalMoves(clickedPiece, finalRow, finalCol);
-                        drawMoves(lastClickedPiece);
-                        drawTakes(lastClickedPiece);
-                        if(lastClickedPiece instanceof Pawn){
-                            drawEnPassant((Pawn) lastClickedPiece);
+                cells[finalRow][finalCol] = cell;
+                if(!current.is_bot) {
+                    cell.setOnMouseClicked((MouseEvent event) -> {
+                        removeDots();
+                        Pieces clickedPiece = game_board[finalRow][finalCol];
+                        if (current.is_bot) {
+                            return;
                         }
-                        return;
-                    }
-                    if (lastClickedPiece == null) {
-                        return;
-                    }
-
-                    for (Coordinates<Integer, Integer> coord : lastClickedPiece.moveList) {
-                        if (coord.getX() == finalRow && coord.getY() == finalCol) {
-                            game.move(finalRow, finalCol, lastClickedPiece, tempRow, tempCol, lastClickedPiece.color, current);
-                            if(game.checkForPromotion(lastClickedPiece)) {
-                                drawPromotionChoosingScreen((Pawn) lastClickedPiece, finalRow, finalCol);
-                            }
-                            try {
-                                turn.changeTurn();
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-                            } catch (InterruptedException e) {
-                                throw new RuntimeException(e);
-                            }
-
-                            for (Pieces[] pieces : game_board) {
-                                for (Pieces piece : pieces) {
-                                    if (piece instanceof Pawn && Objects.equals(piece.color, turn.player)) {
-                                        ((Pawn) piece).movedByTwo = false;
-                                    }
-                                }
+                        if (clickedPiece != null && clickedPiece.color.equals(turn.player)) {
+                            lastClickedPiece = clickedPiece;
+                            tempRow = finalRow;
+                            tempCol = finalCol;
+                            game.showLegalMoves(clickedPiece, finalRow, finalCol);
+                            drawMoves(lastClickedPiece);
+                            drawTakes(lastClickedPiece);
+                            if (lastClickedPiece instanceof Pawn) {
+                                drawEnPassant((Pawn) lastClickedPiece);
                             }
                             return;
                         }
-                    }
-
-                    for (Coordinates<Integer, Integer> coord : lastClickedPiece.takesList) {
-                        if (coord.getX() == finalRow && coord.getY() == finalCol) {
-                            game.move(finalRow, finalCol, lastClickedPiece, tempRow, tempCol, lastClickedPiece.color, current);
-                            if(game.checkForPromotion(lastClickedPiece)) {
-                                drawPromotionChoosingScreen((Pawn) lastClickedPiece, finalRow, finalCol);
-                            }
-                            Board.refreshBoard();
-                            try {
-                                turn.changeTurn();
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-                            } catch (InterruptedException e) {
-                                throw new RuntimeException(e);
-                            }
-                            for (Pieces[] pieces : game_board) {
-                                for (Pieces piece : pieces) {
-                                    if (piece instanceof Pawn && Objects.equals(piece.color, turn.player)) {
-                                        ((Pawn) piece).movedByTwo = false;
-                                    }
-                                }
-                            }
+                        if (lastClickedPiece == null) {
                             return;
                         }
-                    }
-                });
+
+                        for (Coordinates<Integer, Integer> coord : lastClickedPiece.moveList) {
+                            if (coord.getX() == finalRow && coord.getY() == finalCol) {
+                                game.move(finalRow, finalCol, lastClickedPiece, tempRow, tempCol, lastClickedPiece.color, current);
+                                if (game.checkForPromotion(lastClickedPiece)) {
+                                    drawPromotionChoosingScreen((Pawn) lastClickedPiece, finalRow, finalCol);
+                                }
+                                try {
+                                    turn.changeTurn();
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                } catch (InterruptedException e) {
+                                    throw new RuntimeException(e);
+                                }
+
+                                for (Pieces[] pieces : game_board) {
+                                    for (Pieces piece : pieces) {
+                                        if (piece instanceof Pawn && Objects.equals(piece.color, turn.player)) {
+                                            ((Pawn) piece).movedByTwo = false;
+                                        }
+                                    }
+                                }
+                                return;
+                            }
+                        }
+
+                        for (Coordinates<Integer, Integer> coord : lastClickedPiece.takesList) {
+                            if (coord.getX() == finalRow && coord.getY() == finalCol) {
+                                game.move(finalRow, finalCol, lastClickedPiece, tempRow, tempCol, lastClickedPiece.color, current);
+                                if (game.checkForPromotion(lastClickedPiece)) {
+                                    drawPromotionChoosingScreen((Pawn) lastClickedPiece, finalRow, finalCol);
+                                }
+                                Board.refreshBoard();
+                                try {
+                                    turn.changeTurn();
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                } catch (InterruptedException e) {
+                                    throw new RuntimeException(e);
+                                }
+                                for (Pieces[] pieces : game_board) {
+                                    for (Pieces piece : pieces) {
+                                        if (piece instanceof Pawn && Objects.equals(piece.color, turn.player)) {
+                                            ((Pawn) piece).movedByTwo = false;
+                                        }
+                                    }
+                                }
+                                return;
+                            }
+                        }
+                    });
+                }
+
                 cell.getChildren().addAll(square, label);
                 this.add(cell, col, row);
                 refreshBoard();
             }
         }
+        GameState.is_bot_static.addListener((obs, oldVal, newVal) -> {
+            if(current.is_bot) {
+                if (!game_over) {
+                    ChessBotLvl0 bot0 = new ChessBotLvl0();
+                    Pair<Coordinates<Integer, Integer>, Coordinates<Integer, Integer>> move = bot0.setMove();
+                    int pieceRow = move.first().getX();
+                    int pieceCol = move.first().getY();
+                    int moveRow = move.second().getX();
+                    int moveCol = move.second().getY();
+                    game.move(moveRow, moveCol, game_board[pieceRow][pieceCol], pieceRow, pieceCol, game_board[pieceRow][pieceCol].color, current);
+                    try {
+                        turn.changeTurn();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                refreshBoard();
+            }
+        });
     }
 
     public static void refreshBoard() {

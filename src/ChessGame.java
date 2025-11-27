@@ -1,3 +1,4 @@
+import javafx.application.Platform;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
@@ -5,9 +6,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.*;
 
 import static java.lang.System.exit;
@@ -120,11 +119,10 @@ public class ChessGame {
             winner = king_color.oppositeColor().toString();
             java.util.concurrent.Callable<Void> task = () -> {
                 try {
-                    //Thread.sleep(1000);
                     EndMenu endMenu = new EndMenu();
                     endMenu.launchMenu(winner);
                     if (endMenu.restart) {
-                        endMenu.restartGame();
+                        Platform.runLater(() -> Main.restart_game.set(true));
                     } else {
                         exit(0);
                     }
@@ -147,11 +145,10 @@ public class ChessGame {
             winner = "null";
             java.util.concurrent.Callable<Void> task = () -> {
                 try {
-                    //Thread.sleep(1000);
                     EndMenu endMenu = new EndMenu();
                     endMenu.launchMenu(winner);
-                    if (endMenu.restart) {
-                        endMenu.restartGame();
+                    if (!endMenu.restart) {
+                        Platform.runLater(() -> Main.restart_game.set(true));
                     } else {
                         exit(0);
                     }

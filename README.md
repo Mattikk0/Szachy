@@ -55,3 +55,7 @@ Wersja 1.8
 (+) Menu do wyświetlania komunikatów (na razie 2 komunikaty: brak zapisanej gry, otwarcie zapisanej gry która została już ukończona), bez wyboru wczytania gry/rozpoczęcia nowej gry nie wyświetla się już plansza, do zrobienia dalej restart po zakończeniu gry.
 
 (m) poprawione wyświetlanie ostatniego ruchu przed końcem gry
+
+Wersja 1.9
+
+(+) Działający przcisk "Restart" w EndMenu wyświetla StartMenu. Dodany bot szachowy, który losuje figurę i ruch jaki wykona.
