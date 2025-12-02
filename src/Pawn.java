@@ -17,7 +17,7 @@ public class Pawn extends Pieces{
     public static List<Coordinates<Integer, Integer>> epList = new ArrayList<>();
     @Override
     public void legalMoves(int row, int col) {
-        if(this.color == PieceColor.WHITE){
+        if(this.color == Board.player_on_bottom){
             if(!isOutOfBoard(row-1, col)) {
                 if (Board.game_board[row - 1][col] == null) {
                     this.moveList.add(new Coordinates<>(row - 1, col));
@@ -42,7 +42,7 @@ public class Pawn extends Pieces{
     @Override
     void legalTakes(int row, int col) {
         enPassant(row, col);
-        if(this.color == PieceColor.WHITE){
+        if(this.color == Board.player_on_bottom){
             if(!isOutOfBoard(row-1, col+1) && !(Board.game_board[row-1][col+1] instanceof King)) {
                 this.takesList.add(new Coordinates<>(row-1, col+1));
             }
@@ -73,7 +73,7 @@ public class Pawn extends Pieces{
     boolean isChecking() {
         Coordinates king_position;
         king_position = findFigure(King.class, this.color.oppositeColor());
-        if(this.color == PieceColor.WHITE){
+        if(this.color == Board.player_on_bottom){
             if((king_position.getX() == this.position.getX() - 1 && king_position.getY() == this.position.getY()-1) || (king_position.getX() == this.position.getX()-1 && king_position.getY() == this.position.getY()+1)){
                 return true;
             }
@@ -87,7 +87,7 @@ public class Pawn extends Pieces{
 
     void enPassant(int row, int col){
         if(!isOutOfBoard(row, col+1) && Board.game_board[row][col+1] != null && Board.game_board[row][col+1] instanceof Pawn && Board.game_board[row][col+1].color != this.color && ((Pawn) Board.game_board[row][col+1]).movedByTwo == true){
-            if(this.color == PieceColor.WHITE){
+            if(this.color == Board.player_on_bottom){
                 epList.add(new Coordinates<>(row-1, col+1));
                 this.did_ep = true;
             }else{
@@ -96,7 +96,7 @@ public class Pawn extends Pieces{
             }
         }
         if(!isOutOfBoard(row, col-1) && Board.game_board[row][col-1] != null && Board.game_board[row][col-1] instanceof Pawn && Board.game_board[row][col-1].color != this.color && ((Pawn) Board.game_board[row][col-1]).movedByTwo == true){
-            if(this.color == PieceColor.WHITE){
+            if(this.color == Board.player_on_bottom){
                 epList.add(new Coordinates<>(row-1, col-1));
                 this.did_ep = true;
             }else{

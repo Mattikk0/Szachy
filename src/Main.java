@@ -20,7 +20,6 @@ public class Main extends Application {
         Board.current = new GameState();
         Board.whole_board = new GameState();
         Board.game_over = false;
-
         ChessGame.no_progress_moves = 0;
         ChessGame.full_turns = 0;
         ChessGame.winner = null;

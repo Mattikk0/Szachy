@@ -59,3 +59,7 @@ Wersja 1.8
 Wersja 1.9
 
 (+) Działający przcisk "Restart" w EndMenu wyświetla StartMenu. Dodany bot szachowy, który losuje figurę i ruch jaki wykona.
+
+Wersja 2.0
+
+(+) Dodane menu wyboru koloru, przeciwnika i poziomu bota, dodane ruchy bota, wstepnie zrobiona (niedziałająca) promocja pionka dla bota

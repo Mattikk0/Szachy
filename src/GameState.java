@@ -11,7 +11,6 @@ public class GameState{
     private static final GameState BLACK_INSTANCE = new GameState();
     List<Pair<Pieces, Coordinates>> piecesList = new ArrayList<>();
     int material;
-    //public BooleanProperty is_bot = new SimpleBooleanProperty(false);
     public boolean is_bot;
     public static BooleanProperty  is_bot_static = new SimpleBooleanProperty();
 

@@ -44,6 +44,10 @@ public class Board extends GridPane {
     static GameState whole_board = new GameState();
     private boolean loaded_game = false;
     public static boolean game_over = false;
+    public boolean plays_white;
+    public boolean opponent_is_bot;
+    public ChessBot opponent_bot;
+    public static PieceColor player_on_bottom;
 
     public Board(ChessGame game) throws IOException, InterruptedException {
         this.game = game;
@@ -52,73 +56,90 @@ public class Board extends GridPane {
         Board.board_hash = ChessGame.hashBoardToNumber();
     }
 
-    static void drawPiecesNewGame(Label label, int row, int col) {
-        if (row == 6) {
+    static void drawPiecesNewGame(Label label, int row, int col, boolean white) {
+        int black_pawn_row;
+        int black_piece_row;
+        int white_pawn_row;
+        int white_piece_row;
+        if(white){
+            player_on_bottom = PieceColor.WHITE;
+            black_pawn_row = 1;
+            black_piece_row = 0;
+            white_pawn_row = 6;
+            white_piece_row = 7;
+        }else{
+            player_on_bottom = PieceColor.BLACK;
+            black_pawn_row = 6;
+            black_piece_row = 7;
+            white_pawn_row = 1;
+            white_piece_row = 0;
+        }
+        if (row == white_pawn_row) {
             Pawn white_pawn = new Pawn(PieceColor.WHITE, label);
-            game_board[6][col] = white_pawn;
-            white_pawn.position = new Coordinates<>(6, col);
+            game_board[white_pawn_row][col] = white_pawn;
+            white_pawn.position = new Coordinates<>(white_pawn_row, col);
         }
-        if (row == 1) {
+        if (row == black_pawn_row) {
             Pawn black_pawn = new Pawn(PieceColor.BLACK, label);
-            game_board[1][col] = black_pawn;
-            black_pawn.position = new Coordinates<>(1, col);
+            game_board[black_pawn_row][col] = black_pawn;
+            black_pawn.position = new Coordinates<>(black_pawn_row, col);
         }
-        if (row == 0) {
+        if (row == black_piece_row) {
             switch (col) {
                 case 0, 7:
                     Rook black_rook = new Rook(PieceColor.BLACK, label);
-                    game_board[0][col] = black_rook;
-                    black_rook.position = new Coordinates<>(0, col);
+                    game_board[black_piece_row][col] = black_rook;
+                    black_rook.position = new Coordinates<>(black_piece_row, col);
                     break;
                 case 1, 6:
                     Knight black_knight = new Knight(PieceColor.BLACK, label);
-                    game_board[0][col] = black_knight;
-                    black_knight.position = new Coordinates<>(0, col);
+                    game_board[black_piece_row][col] = black_knight;
+                    black_knight.position = new Coordinates<>(black_piece_row, col);
                     break;
                 case 2, 5:
                     Bishop black_bishop = new Bishop(PieceColor.BLACK, label);
-                    game_board[0][col] = black_bishop;
-                    black_bishop.position = new Coordinates<>(0, col);
+                    game_board[black_piece_row][col] = black_bishop;
+                    black_bishop.position = new Coordinates<>(black_piece_row, col);
                     break;
                 case 3:
                     Queen black_queen = new Queen(PieceColor.BLACK, label);
-                    game_board[0][col] = black_queen;
-                    black_queen.position = new Coordinates<>(0, col);
+                    game_board[black_piece_row][col] = black_queen;
+                    black_queen.position = new Coordinates<>(black_piece_row , col);
                     break;
                 case 4:
                     King black_king = new King(PieceColor.BLACK, label);
-                    game_board[0][col] = black_king;
-                    black_king.position = new Coordinates<>(0, col);
+                    game_board[black_piece_row][col] = black_king;
+                    black_king.position = new Coordinates<>(black_piece_row, col);
                     black_king.updateZone();
                     break;
             }
         }
-        if (row == 7) {
+        if (row == white_piece_row) {
             switch (col) {
                 case 0, 7:
                     Rook white_rook = new Rook(PieceColor.WHITE, label);
-                    game_board[7][col] = white_rook;
-                    white_rook.position = new Coordinates<>(7, col);
+                    game_board[white_piece_row][col] = white_rook;
+                    white_rook.position = new Coordinates<>(white_piece_row, col);
                     break;
                 case 1, 6:
                     Knight white_knight = new Knight(PieceColor.WHITE, label);
-                    game_board[7][col] = white_knight;
-                    white_knight.position = new Coordinates<>(7, col);
+                    game_board[white_piece_row][col] = white_knight;
+                    white_knight.position = new Coordinates<>(white_piece_row, col);
                     break;
                 case 2, 5:
                     Bishop white_bishop = new Bishop(PieceColor.WHITE, label);
-                    game_board[7][col] = white_bishop;
-                    white_bishop.position = new Coordinates<>(7, col);
+                    game_board[white_piece_row][col] = white_bishop;
+                    white_bishop.position = new Coordinates<>(white_piece_row, col);
                     break;
                 case 3:
                     Queen white_queen = new Queen(PieceColor.WHITE, label);
-                    game_board[7][col] = white_queen;
-                    white_queen.position = new Coordinates<>(7, col);
+                    game_board[white_piece_row][col] = white_queen;
+                    white_queen.position = new Coordinates<>(white_piece_row, col);
                     break;
                 case 4:
                     King white_king = new King(PieceColor.WHITE, label);
-                    game_board[7][col] = white_king;
-                    white_king.position = new Coordinates<>(7, col);
+                    game_board[white_piece_row][col] = white_king;
+                    white_king.position = new Coordinates<>(white_piece_row, col);
                     white_king.updateZone();
                     break;
             }
@@ -144,8 +165,22 @@ public class Board extends GridPane {
     }
 
 
-
     void drawBoard() throws IOException, InterruptedException {
+        if(this.game.new_game) {
+            ChooserMenu cm = new ChooserMenu();
+            cm.launchMenu();
+            plays_white = cm.chosenColor.equals("white");
+            opponent_is_bot = cm.opponent.equals("bot");
+            if (opponent_is_bot) {
+                opponent_bot = game.getBot(cm.botLevel);
+            }
+            if (plays_white && opponent_is_bot) {
+                turn.blackPlayer.is_bot = true;
+            } else if (!plays_white && opponent_is_bot) {
+                turn.whitePlayer.is_bot = true;
+                GameState.is_bot_static.set(true);
+            }
+        }
         for (int row = 0; row < ROWS; row++) {
             for (int col = 0; col < COLS; col++) {
                 Label label = new Label();
@@ -156,7 +191,7 @@ public class Board extends GridPane {
                 GridPane.setValignment(label, VPos.CENTER);
 
                 if (this.game.new_game) {
-                    drawPiecesNewGame(label, row, col);
+                    drawPiecesNewGame(label, row, col, plays_white);
                 } else {
                     if (!loaded_game) {
                         game.loadGameFromFile("SavedGame.pgn");
@@ -256,13 +291,15 @@ public class Board extends GridPane {
         GameState.is_bot_static.addListener((obs, oldVal, newVal) -> {
             if(current.is_bot) {
                 if (!game_over) {
-                    ChessBotLvl0 bot0 = new ChessBotLvl0();
-                    Pair<Coordinates<Integer, Integer>, Coordinates<Integer, Integer>> move = bot0.setMove();
+                    Pair<Coordinates<Integer, Integer>, Coordinates<Integer, Integer>> move = opponent_bot.setMove();
                     int pieceRow = move.first().getX();
                     int pieceCol = move.first().getY();
                     int moveRow = move.second().getX();
                     int moveCol = move.second().getY();
                     game.move(moveRow, moveCol, game_board[pieceRow][pieceCol], pieceRow, pieceCol, game_board[pieceRow][pieceCol].color, current);
+                    if (game.checkForPromotion(Board.game_board[moveRow][moveCol])) {
+                        game.promotion(opponent_bot.getPromotionPiece(turn.player, getCellLabel(moveRow, moveCol)), moveRow, moveCol, (Pawn)Board.game_board[moveRow][moveCol]);
+                    }
                     try {
                         turn.changeTurn();
                     } catch (IOException e) {

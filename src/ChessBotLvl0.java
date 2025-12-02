@@ -1,3 +1,5 @@
+import javafx.scene.control.Label;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -37,7 +39,6 @@ public class ChessBotLvl0 extends ChessBot {
                 } else {
                     int move_index = random_move.nextInt(mergedList.size());
                     Coordinates<Integer, Integer> move = mergedList.get(move_index);
-                    System.out.println(piece + " " + move);
                     return new Pair<>(new Coordinates<>(piece_row, piece_col), move);
                 }
 
@@ -48,6 +49,21 @@ public class ChessBotLvl0 extends ChessBot {
         Board.turn.player = null;
         return null;
     }
+
+    @Override
+    public Pieces getPromotionPiece(PieceColor color, Label label) {
+        Random random_piece = new Random();
+        int piece_index = random_piece.nextInt(3);
+        return switch (piece_index) {
+            case 0 -> new Knight(color, label);
+            case 1 -> new Bishop(color, label);
+            case 2 -> new Rook(color, label);
+            case 3 -> new Queen(color, label);
+            default -> null;
+        };
+    }
+
+
 
 }
 

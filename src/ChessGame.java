@@ -8,6 +8,9 @@ import javafx.scene.layout.GridPane;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static java.lang.System.exit;
 
@@ -42,7 +45,7 @@ public class ChessGame {
         if (target == null && piece instanceof Pawn && ((Pawn) piece).did_ep) {
             ChessGame.no_progress_moves = 0;
             player.material += 1;
-            if (piece.color == PieceColor.WHITE) {
+            if (piece.color == Board.player_on_bottom) {
                 Board.cells[row + 1][col].getChildren().remove(Board.game_board[row + 1][col].label);
                 Board.game_board[row + 1][col] = null;
             } else {
@@ -64,14 +67,14 @@ public class ChessGame {
         if (piece instanceof King) {
             ((King) piece).moved = true;
             if (prev_col - col == 2) {
-                if (piece.color == PieceColor.WHITE) {
+                if (piece.color == Board.player_on_bottom) {
                     Board.game_board[7][0].setPosition(7, 3);
                 } else {
                     Board.game_board[0][0].setPosition(0, 3);
                 }
             }
             if (prev_col - col == -2) {
-                if (piece.color == PieceColor.WHITE) {
+                if (piece.color == Board.player_on_bottom) {
                     Board.game_board[7][7].setPosition(7, 5);
                 } else {
                     Board.game_board[0][7].setPosition(0, 5);
@@ -117,7 +120,7 @@ public class ChessGame {
         King king = (King) Board.game_board[Pieces.findFigure(King.class, king_color).getX()][Pieces.findFigure(King.class, king_color).getY()];
         if (king.isChecked && checkIfGameOver(king_color)) {
             winner = king_color.oppositeColor().toString();
-            java.util.concurrent.Callable<Void> task = () -> {
+            Callable<Void> task = () -> {
                 try {
                     EndMenu endMenu = new EndMenu();
                     endMenu.launchMenu(winner);
@@ -131,7 +134,7 @@ public class ChessGame {
                 }
                 return null;
             };
-            java.util.concurrent.ExecutorService executor = java.util.concurrent.Executors.newSingleThreadExecutor();
+            ExecutorService executor = Executors.newSingleThreadExecutor();
             executor.submit(task);
             executor.shutdown();
             return true;
@@ -143,7 +146,7 @@ public class ChessGame {
         King king = (King) Board.game_board[Pieces.findFigure(King.class, king_color).getX()][Pieces.findFigure(King.class, king_color).getY()];
         if (!king.isChecked && (checkIfGameOver(king_color) || noProgressStalemate() || repetitionStalemate() || insufficientMaterialStalemate())) {
             winner = "null";
-            java.util.concurrent.Callable<Void> task = () -> {
+            Callable<Void> task = () -> {
                 try {
                     EndMenu endMenu = new EndMenu();
                     endMenu.launchMenu(winner);
@@ -157,7 +160,7 @@ public class ChessGame {
                 }
                 return null;
             };
-            java.util.concurrent.ExecutorService executor = java.util.concurrent.Executors.newSingleThreadExecutor();
+            ExecutorService executor = Executors.newSingleThreadExecutor();
             executor.submit(task);
             executor.shutdown();
             return true;
@@ -366,7 +369,7 @@ public class ChessGame {
     private void setCastlingRights(String castlingStr) {
         for (int colorIdx = 0; colorIdx < 2; colorIdx++) {
             PieceColor color = (colorIdx == 0) ? PieceColor.WHITE : PieceColor.BLACK;
-            int kingRow = (color == PieceColor.WHITE) ? 7 : 0;
+            int kingRow = (color == Board.player_on_bottom) ? 7 : 0;
             Pieces king = Board.game_board[kingRow][4];
             if (king instanceof King) ((King) king).moved = true;
             Pieces rookK = Board.game_board[kingRow][7];
@@ -381,7 +384,7 @@ public class ChessGame {
     }
 
     private void handleCastlingKingside(PieceColor color) {
-        int kingRow = (color == PieceColor.WHITE) ? 7 : 0;
+        int kingRow = (color == Board.player_on_bottom) ? 7 : 0;
         Pieces king = Board.game_board[kingRow][4];
         Pieces rook = Board.game_board[kingRow][7];
         if (king instanceof King && king.color == color) ((King) king).moved = false;
@@ -389,7 +392,7 @@ public class ChessGame {
     }
 
     private void handleCastlingQueenside(PieceColor color) {
-        int kingRow = (color == PieceColor.WHITE) ? 7 : 0;
+        int kingRow = (color == Board.player_on_bottom) ? 7 : 0;
         Pieces king = Board.game_board[kingRow][4];
         Pieces rook = Board.game_board[kingRow][0];
         if (king instanceof King && king.color == color) ((King) king).moved = false;
@@ -407,7 +410,7 @@ public class ChessGame {
                 Pawn.epList.add(new Coordinates<>(row, col));
             }
         }
-        if(currentTurn == PieceColor.WHITE){
+        if(currentTurn == Board.player_on_bottom){
             if(!Pawn.epList.isEmpty()){
                 if(!Pieces.isOutOfBoard(Pawn.epList.get(0).getX()-1, Pawn.epList.get(0).getY()-1) && Board.game_board[Pawn.epList.get(0).getX()-1][Pawn.epList.get(0).getY()-1] != null && Board.game_board[Pawn.epList.get(0).getX()-1][Pawn.epList.get(0).getY()-1] instanceof Pawn){
                     Pawn pawn = (Pawn) Board.game_board[Pawn.epList.get(0).getX()-1][Pawn.epList.get(0).getY() - 1];
@@ -457,14 +460,23 @@ public class ChessGame {
 
     boolean checkForPromotion(Pieces piece){
         if(piece instanceof Pawn){
-            if(piece.color == PieceColor.WHITE && piece.position.getX() == 0){
+            if(piece.color == Board.player_on_bottom.oppositeColor() && piece.position.getX() == 0){
                 return true;
             }
-            if(piece.color == PieceColor.BLACK && piece.position.getX() == 7){
+            if(piece.color == Board.player_on_bottom && piece.position.getX() == 7){
                 return true;
             }
         }
         return false;
+    }
+    
+    public ChessBot getBot(int level){
+        ChessBot bot = null;
+        switch(level){
+            case 0:
+                bot = new ChessBotLvl0();
+        }
+        return bot;
     }
 
 

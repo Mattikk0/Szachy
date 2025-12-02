@@ -11,8 +11,7 @@ public class Turn {
     public Turn(){
         this.player = PieceColor.WHITE;
         Board.current = whitePlayer;
-        blackPlayer.is_bot = true;
-        whitePlayer.is_bot = false;
+        GameState.is_bot_static.set(Board.current.is_bot);
     }
     void changeTurn() throws IOException, InterruptedException {
         if(this.player == PieceColor.WHITE){
