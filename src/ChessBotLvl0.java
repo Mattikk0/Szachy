@@ -53,7 +53,7 @@ public class ChessBotLvl0 extends ChessBot {
     @Override
     public Pieces getPromotionPiece(PieceColor color, Label label) {
         Random random_piece = new Random();
-        int piece_index = random_piece.nextInt(3);
+        int piece_index = random_piece.nextInt(4);
         return switch (piece_index) {
             case 0 -> new Knight(color, label);
             case 1 -> new Bishop(color, label);

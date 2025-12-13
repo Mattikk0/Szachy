@@ -44,8 +44,8 @@ def accept():
             lvl = str(bot_level.get())
         text = f"{col} {opp} {lvl}"
         print(text)
-    root.destroy()
-    root.quit()
+        root.destroy()
+        root.quit()
 
 
 def update_checkboxes(check_var, opp_check_var, *args):

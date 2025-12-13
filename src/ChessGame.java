@@ -25,6 +25,16 @@ public class ChessGame {
         piece.legalMoves(row, col);
     }
 
+    private void resetAllPawnsMovedByTwo() {
+        for (Pieces[] row : Board.game_board) {
+            for (Pieces piece : row) {
+                if (piece instanceof Pawn) {
+                    ((Pawn) piece).movedByTwo = false;
+                }
+            }
+        }
+    }
+
     void showLegalTakes(Pieces playerPiece, int row, int col) {
         if (playerPiece instanceof Pawn) {
             ((Pawn) playerPiece).epList.clear();
@@ -34,6 +44,7 @@ public class ChessGame {
     }
 
     void move(int row, int col, Pieces piece, int prev_row, int prev_col, PieceColor color, GameState player) {
+        resetAllPawnsMovedByTwo();
         ChessGame.no_progress_moves++;
         Pieces target = Board.game_board[row][col];
 
@@ -68,16 +79,16 @@ public class ChessGame {
             ((King) piece).moved = true;
             if (prev_col - col == 2) {
                 if (piece.color == Board.player_on_bottom) {
-                    Board.game_board[7][0].setPosition(7, 3);
+                    Board.game_board[7][0].setPosition(7, col+1);
                 } else {
-                    Board.game_board[0][0].setPosition(0, 3);
+                    Board.game_board[0][0].setPosition(0, col+1);
                 }
             }
             if (prev_col - col == -2) {
                 if (piece.color == Board.player_on_bottom) {
-                    Board.game_board[7][7].setPosition(7, 5);
+                    Board.game_board[7][7].setPosition(7, col-1);
                 } else {
-                    Board.game_board[0][7].setPosition(0, 5);
+                    Board.game_board[0][7].setPosition(0, col-1);
                 }
             }
         }
@@ -278,12 +289,50 @@ public class ChessGame {
             errorMenu.launchMenu("no_file");
             errorMenu.launchStartMenu();
         }else {
-
             try {
                 Scanner scanner = new Scanner(new File(file_name));
-                String fenString = scanner.nextLine().trim();
+                List<String> lines = new ArrayList<>();
+                while (scanner.hasNextLine()) {
+                    lines.add(scanner.nextLine().trim());
+                }
+                String fenString = lines.get(0);
+                String whitePlayer = lines.get(1);
+                String blackPlayer = lines.get(2);
                 scanner.close();
+                whitePlayer = whitePlayer.replace("]", "");
+                whitePlayer = whitePlayer.replace("[", "");
+                whitePlayer = whitePlayer.replace(":", "");
+
+                blackPlayer = blackPlayer.replace("]", "");
+                blackPlayer = blackPlayer.replace("[", "");
+                blackPlayer = blackPlayer.replace(":", "");
+
+                fenString = fenString.replace("]", "");
+                fenString = fenString.replace("[", "");
+
                 String[] fenParts = fenString.split(" ");
+                String[] blackParts = blackPlayer.split(" ");
+                String[] whiteParts = whitePlayer.split(" ");
+
+                if (whiteParts.length < 2 || blackParts.length < 2) {
+                    throw new IOException("Invalid player data in save file");
+                }
+                if(whiteParts[0].equals(whiteParts[0].toLowerCase())){
+                    Board.player_on_bottom = PieceColor.BLACK;
+                }else{
+                    Board.player_on_bottom = PieceColor.WHITE;
+                }
+                if(whiteParts[1].contains("Bot")){
+                    int level = Integer.parseInt(whiteParts[1].replace("BotLevel", "").trim());
+                    Board.opponent_bot = getBot(level);
+                    GameState.getWhiteInstance().is_bot = true;
+                }
+                if(blackParts[1].contains("Bot")){
+                    int level = Integer.parseInt(blackParts[1].replace("BotLevel", "").trim());
+                    Board.opponent_bot = getBot(level);
+                    GameState.getBlackInstance().is_bot = true;
+                }
+
                 if (fenParts.length < 6) {
                     throw new IOException("Invalid FEN string: insufficient parts");
                 }
@@ -296,6 +345,17 @@ public class ChessGame {
                         return;
                     }
                 }
+                Board.opponent_is_bot = GameState.getWhiteInstance().is_bot || GameState.getBlackInstance().is_bot;
+                if(Board.turn.player == PieceColor.WHITE){
+                    Board.current = GameState.getWhiteInstance();
+                }else{
+                    Board.current = GameState.getBlackInstance();
+                }
+                Board.turn.whitePlayer.is_bot = GameState.getWhiteInstance().is_bot;
+                Board.turn.blackPlayer.is_bot = GameState.getBlackInstance().is_bot;
+                GameState.is_bot_static.set(Board.current.is_bot);
+
+
                 parseBoardFromFEN(fenParts[0]);
                 setCastlingRights(fenParts[2]);
                 setEnPassantSquare(fenParts[3], Board.turn.player);
@@ -309,6 +369,7 @@ public class ChessGame {
                 System.err.println("Error loading game: " + e.getMessage());
             }
         }
+        Board.refreshBoard();
     }
 
     private void parseBoardFromFEN(String fenPart0) {
@@ -460,10 +521,10 @@ public class ChessGame {
 
     boolean checkForPromotion(Pieces piece){
         if(piece instanceof Pawn){
-            if(piece.color == Board.player_on_bottom.oppositeColor() && piece.position.getX() == 0){
+            if(piece.color == Board.player_on_bottom && piece.position.getX() == 0){
                 return true;
             }
-            if(piece.color == Board.player_on_bottom && piece.position.getX() == 7){
+            if(piece.color == Board.player_on_bottom.oppositeColor() && piece.position.getX() == 7){
                 return true;
             }
         }

@@ -45,8 +45,8 @@ public class Board extends GridPane {
     private boolean loaded_game = false;
     public static boolean game_over = false;
     public boolean plays_white;
-    public boolean opponent_is_bot;
-    public ChessBot opponent_bot;
+    public static boolean opponent_is_bot;
+    public static ChessBot opponent_bot;
     public static PieceColor player_on_bottom;
 
     public Board(ChessGame game) throws IOException, InterruptedException {
@@ -102,15 +102,28 @@ public class Board extends GridPane {
                     black_bishop.position = new Coordinates<>(black_piece_row, col);
                     break;
                 case 3:
-                    Queen black_queen = new Queen(PieceColor.BLACK, label);
-                    game_board[black_piece_row][col] = black_queen;
-                    black_queen.position = new Coordinates<>(black_piece_row , col);
+                    if(black_piece_row==0){
+                        Queen black_queen = new Queen(PieceColor.BLACK, label);
+                        game_board[black_piece_row][col] = black_queen;
+                        black_queen.position = new Coordinates<>(black_piece_row , col);
+                    }else{
+                        King black_king = new King(PieceColor.BLACK, label);
+                        game_board[black_piece_row][col] = black_king;
+                        black_king.position = new Coordinates<>(black_piece_row, col);
+                        black_king.updateZone();
+                    }
                     break;
                 case 4:
-                    King black_king = new King(PieceColor.BLACK, label);
-                    game_board[black_piece_row][col] = black_king;
-                    black_king.position = new Coordinates<>(black_piece_row, col);
-                    black_king.updateZone();
+                    if(black_piece_row==0) {
+                        King black_king = new King(PieceColor.BLACK, label);
+                        game_board[black_piece_row][col] = black_king;
+                        black_king.position = new Coordinates<>(black_piece_row, col);
+                        black_king.updateZone();
+                    }else{
+                        Queen black_queen = new Queen(PieceColor.BLACK, label);
+                        game_board[black_piece_row][col] = black_queen;
+                        black_queen.position = new Coordinates<>(black_piece_row , col);
+                    }
                     break;
             }
         }
@@ -132,15 +145,28 @@ public class Board extends GridPane {
                     white_bishop.position = new Coordinates<>(white_piece_row, col);
                     break;
                 case 3:
-                    Queen white_queen = new Queen(PieceColor.WHITE, label);
-                    game_board[white_piece_row][col] = white_queen;
-                    white_queen.position = new Coordinates<>(white_piece_row, col);
+                    if(white_piece_row == 7){
+                        Queen white_queen = new Queen(PieceColor.WHITE, label);
+                        game_board[white_piece_row][col] = white_queen;
+                        white_queen.position = new Coordinates<>(white_piece_row, col);
+                    }else{
+                        King white_king = new King(PieceColor.WHITE, label);
+                        game_board[white_piece_row][col] = white_king;
+                        white_king.position = new Coordinates<>(white_piece_row, col);
+                        white_king.updateZone();
+                    }
                     break;
                 case 4:
-                    King white_king = new King(PieceColor.WHITE, label);
-                    game_board[white_piece_row][col] = white_king;
-                    white_king.position = new Coordinates<>(white_piece_row, col);
-                    white_king.updateZone();
+                    if(white_piece_row == 7) {
+                        King white_king = new King(PieceColor.WHITE, label);
+                        game_board[white_piece_row][col] = white_king;
+                        white_king.position = new Coordinates<>(white_piece_row, col);
+                        white_king.updateZone();
+                    }else{
+                        Queen white_queen = new Queen(PieceColor.WHITE, label);
+                        game_board[white_piece_row][col] = white_queen;
+                        white_queen.position = new Coordinates<>(white_piece_row, col);
+                    }
                     break;
             }
         }
@@ -177,10 +203,12 @@ public class Board extends GridPane {
             if (plays_white && opponent_is_bot) {
                 turn.blackPlayer.is_bot = true;
             } else if (!plays_white && opponent_is_bot) {
-                turn.whitePlayer.is_bot = true;
                 GameState.is_bot_static.set(true);
+                turn.whitePlayer.is_bot = true;
             }
+            turn.player = PieceColor.WHITE;
         }
+
         for (int row = 0; row < ROWS; row++) {
             for (int col = 0; col < COLS; col++) {
                 Label label = new Label();
@@ -244,14 +272,6 @@ public class Board extends GridPane {
                                 } catch (InterruptedException e) {
                                     throw new RuntimeException(e);
                                 }
-
-                                for (Pieces[] pieces : game_board) {
-                                    for (Pieces piece : pieces) {
-                                        if (piece instanceof Pawn && Objects.equals(piece.color, turn.player)) {
-                                            ((Pawn) piece).movedByTwo = false;
-                                        }
-                                    }
-                                }
                                 return;
                             }
                         }
@@ -270,13 +290,6 @@ public class Board extends GridPane {
                                 } catch (InterruptedException e) {
                                     throw new RuntimeException(e);
                                 }
-                                for (Pieces[] pieces : game_board) {
-                                    for (Pieces piece : pieces) {
-                                        if (piece instanceof Pawn && Objects.equals(piece.color, turn.player)) {
-                                            ((Pawn) piece).movedByTwo = false;
-                                        }
-                                    }
-                                }
                                 return;
                             }
                         }
@@ -289,28 +302,49 @@ public class Board extends GridPane {
             }
         }
         GameState.is_bot_static.addListener((obs, oldVal, newVal) -> {
-            if(current.is_bot) {
-                if (!game_over) {
+            if(current.is_bot && !game_over) {
+                if (opponent_is_bot) {
                     Pair<Coordinates<Integer, Integer>, Coordinates<Integer, Integer>> move = opponent_bot.setMove();
-                    int pieceRow = move.first().getX();
-                    int pieceCol = move.first().getY();
-                    int moveRow = move.second().getX();
-                    int moveCol = move.second().getY();
-                    game.move(moveRow, moveCol, game_board[pieceRow][pieceCol], pieceRow, pieceCol, game_board[pieceRow][pieceCol].color, current);
-                    if (game.checkForPromotion(Board.game_board[moveRow][moveCol])) {
-                        game.promotion(opponent_bot.getPromotionPiece(turn.player, getCellLabel(moveRow, moveCol)), moveRow, moveCol, (Pawn)Board.game_board[moveRow][moveCol]);
+                    if (move != null) {
+                        int pieceRow = move.first().getX();
+                        int pieceCol = move.first().getY();
+                        int moveRow = move.second().getX();
+                        int moveCol = move.second().getY();
+                        game.move(moveRow, moveCol, game_board[pieceRow][pieceCol], pieceRow, pieceCol, game_board[pieceRow][pieceCol].color, current);
+                        if (game.checkForPromotion(Board.game_board[moveRow][moveCol])) {
+                            game.promotion(opponent_bot.getPromotionPiece(turn.player, getCellLabel(moveRow, moveCol)), moveRow, moveCol, (Pawn)Board.game_board[moveRow][moveCol]);
+                        }
+                        try {
+                            turn.changeTurn();
+                        } catch (IOException | InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        refreshBoard();
                     }
-                    try {
-                        turn.changeTurn();
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
+                }
+            }
+        });
+
+        if (GameState.is_bot_static.get() && !game_over && opponent_is_bot && turn.whitePlayer.is_bot) {
+            Pair<Coordinates<Integer, Integer>, Coordinates<Integer, Integer>> initialMove = opponent_bot.setMove();
+            if (initialMove != null) {
+                int pieceRow = initialMove.first().getX();
+                int pieceCol = initialMove.first().getY();
+                int moveRow = initialMove.second().getX();
+                int moveCol = initialMove.second().getY();
+                game.move(moveRow, moveCol, game_board[pieceRow][pieceCol], pieceRow, pieceCol, game_board[pieceRow][pieceCol].color, current);
+                if (game.checkForPromotion(Board.game_board[moveRow][moveCol])) {
+                    game.promotion(opponent_bot.getPromotionPiece(turn.player, getCellLabel(moveRow, moveCol)), moveRow, moveCol, (Pawn)Board.game_board[moveRow][moveCol]);
+                }
+                try {
+                    turn.changeTurn();
+                } catch (IOException | InterruptedException e) {
+                    e.printStackTrace();
                 }
                 refreshBoard();
             }
-        });
+        }
+
     }
 
     public static void refreshBoard() {

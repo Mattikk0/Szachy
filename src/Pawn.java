@@ -73,6 +73,7 @@ public class Pawn extends Pieces{
     boolean isChecking() {
         Coordinates king_position;
         king_position = findFigure(King.class, this.color.oppositeColor());
+        if (king_position == null) return false;
         if(this.color == Board.player_on_bottom){
             if((king_position.getX() == this.position.getX() - 1 && king_position.getY() == this.position.getY()-1) || (king_position.getX() == this.position.getX()-1 && king_position.getY() == this.position.getY()+1)){
                 return true;

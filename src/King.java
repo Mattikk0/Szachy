@@ -121,12 +121,21 @@ public class King extends Pieces{
         }
     }
     private void castling(Pieces leftRook, Pieces rightRook) {
+        Coordinates<Integer, Integer> king_position = this.position;
         if (leftRook instanceof Rook) {
             if (leftRook != null && !this.moved && !((Rook) leftRook).moved) {
                 boolean canCastleQueenside = true;
-                int startCol = this.color == PieceColor.BLACK ? 1 : 1;
-                int endCol = this.color == PieceColor.BLACK ? 3 : 3;
-
+                int startCol = 0;
+                int endCol = 0;
+                if(king_position.getY() == 3) {
+                    startCol = 4;
+                    endCol = 6;
+                } else if (king_position.getY() == 4) {
+                    startCol = 1;
+                    endCol = 3;
+                }else{
+                    canCastleQueenside = false;
+                }
                 for (int c = startCol; c <= endCol; c++) {
                     if (Board.game_board[this.position.getX()][c] != null) {
                         canCastleQueenside = false;
@@ -135,7 +144,11 @@ public class King extends Pieces{
                 }
 
                 if (canCastleQueenside) {
-                    this.moveList.add(this.color == PieceColor.BLACK ? new Coordinates<>(0, 2) : new Coordinates<>(7, 2));
+                    if(king_position.getY() == 3) {
+                        this.moveList.add(this.color == Board.player_on_bottom.oppositeColor() ? new Coordinates<>(0, 5) : new Coordinates<>(7, 5));
+                    }else{
+                        this.moveList.add(this.color == Board.player_on_bottom.oppositeColor() ? new Coordinates<>(0, 2) : new Coordinates<>(7, 2));
+                    }
                 }
             }
         }
@@ -143,9 +156,17 @@ public class King extends Pieces{
         if (rightRook instanceof Rook) {
             if (rightRook != null && !this.moved && !((Rook) rightRook).moved) {
                 boolean canCastleKingside = true;
-                int startCol = this.color == PieceColor.BLACK ? 5 : 5;
-                int endCol = this.color == PieceColor.BLACK ? 6 : 6;
-
+                int startCol = 0;
+                int endCol = 0;
+                if(king_position.getY() == 3) {
+                    startCol = 1;
+                    endCol = 2;
+                } else if (king_position.getY() == 4) {
+                    startCol = 5;
+                    endCol = 6;
+                }else{
+                    canCastleKingside = false;
+                }
                 for (int c = startCol; c <= endCol; c++) {
                     if (Board.game_board[this.position.getX()][c] != null) {
                         canCastleKingside = false;
@@ -154,12 +175,15 @@ public class King extends Pieces{
                 }
 
                 if (canCastleKingside) {
-                    this.moveList.add(this.color == PieceColor.BLACK ? new Coordinates<>(0, 6) : new Coordinates<>(7, 6));
+                    if(king_position.getY() == 3) {
+                        this.moveList.add(this.color == Board.player_on_bottom.oppositeColor() ? new Coordinates<>(0, startCol) : new Coordinates<>(7, startCol));
+                    }else{
+                        this.moveList.add(this.color == Board.player_on_bottom.oppositeColor() ? new Coordinates<>(0, endCol) : new Coordinates<>(7, endCol));
+                    }
                 }
             }
         }
     }
-
     void avoidOppKing(List<Coordinates<Integer, Integer>> filteredList) {
         Coordinates opp_king_position = findFigure(King.class, this.color.oppositeColor());
         for(Coordinates field : this.zone){
@@ -198,7 +222,7 @@ public class King extends Pieces{
         moveDownLeft(row, col);
         moveDownRight(row, col);
         moveUpRight(row, col);
-        if(this.color == PieceColor.WHITE){
+        if(this.color == Board.player_on_bottom){
             castling(Board.game_board[7][0], Board.game_board[7][7]);
         }else{
             castling(Board.game_board[0][0], Board.game_board[0][7]);

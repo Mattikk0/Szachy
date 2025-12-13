@@ -20,9 +20,12 @@ public class Main extends Application {
         Board.current = new GameState();
         Board.whole_board = new GameState();
         Board.game_over = false;
+        Board.player_on_bottom = null;
+        Board.opponent_bot = null;
         ChessGame.no_progress_moves = 0;
         ChessGame.full_turns = 0;
         ChessGame.winner = null;
+        Board.opponent_is_bot = false;
 
         Pawn.epList.clear();
 

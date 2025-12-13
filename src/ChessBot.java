@@ -1,7 +1,7 @@
 import javafx.scene.control.Label;
 
 public abstract class ChessBot{
-    private int level;
+    int level;
     public ChessBot(int level){
         this.level = level;
     }

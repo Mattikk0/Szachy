@@ -70,6 +70,7 @@ public class GameState{
 
     String buildFENString() {
         StringBuilder fen = new StringBuilder();
+        fen.append("[");
         for (int row = 0; row < 8; row++) {
             int emptyCount = 0;
             for (int col = 0; col < 8; col++) {
@@ -124,6 +125,14 @@ public class GameState{
         fen.append(ChessGame.no_progress_moves);
         fen.append(" ");
         fen.append(ChessGame.full_turns);
+        fen.append("]");
+        fen.append("\n");
+        fen.append(Board.player_on_bottom == PieceColor.WHITE ? "[WHITE: " : "[white: ");
+        fen.append(GameState.WHITE_INSTANCE.is_bot  ? "BotLevel" + Board.opponent_bot.level + "]" : "Player]");
+        fen.append("\n");
+        fen.append(Board.player_on_bottom == PieceColor.BLACK ? "[BLACK: " : "[black: ");
+        fen.append(GameState.BLACK_INSTANCE.is_bot  ? "BotLevel" + Board.opponent_bot.level + "]" : "Player]");
+
         return fen.toString();
     }
 
