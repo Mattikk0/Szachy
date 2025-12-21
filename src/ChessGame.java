@@ -57,11 +57,15 @@ public class ChessGame {
             ChessGame.no_progress_moves = 0;
             player.material += 1;
             if (piece.color == Board.player_on_bottom) {
-                Board.cells[row + 1][col].getChildren().remove(Board.game_board[row + 1][col].label);
-                Board.game_board[row + 1][col] = null;
+                if(!(Board.game_board[row + 1][col] == null)) {
+                    Board.cells[row + 1][col].getChildren().remove(Board.game_board[row + 1][col].label);
+                    Board.game_board[row + 1][col] = null;
+                }
             } else {
-                Board.cells[row - 1][col].getChildren().remove(Board.game_board[row - 1][col].label);
-                Board.game_board[row - 1][col] = null;
+                if(!(Board.game_board[row - 1][col] == null)) {
+                    Board.cells[row - 1][col].getChildren().remove(Board.game_board[row - 1][col].label);
+                    Board.game_board[row - 1][col] = null;
+                }
             }
             ((Pawn) piece).did_ep = false;
         }
@@ -131,6 +135,7 @@ public class ChessGame {
         King king = (King) Board.game_board[Pieces.findFigure(King.class, king_color).getX()][Pieces.findFigure(King.class, king_color).getY()];
         if (king.isChecked && checkIfGameOver(king_color)) {
             winner = king_color.oppositeColor().toString();
+            System.out.println(winner);
             Callable<Void> task = () -> {
                 try {
                     EndMenu endMenu = new EndMenu();
@@ -536,6 +541,10 @@ public class ChessGame {
         switch(level){
             case 0:
                 bot = new ChessBotLvl0();
+                break;
+            case 1:
+                bot = new ChessBotLvl1();
+                break;
         }
         return bot;
     }

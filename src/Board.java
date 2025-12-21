@@ -1,3 +1,4 @@
+import javafx.application.Platform;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -258,7 +259,6 @@ public class Board extends GridPane {
                         if (lastClickedPiece == null) {
                             return;
                         }
-
                         for (Coordinates<Integer, Integer> coord : lastClickedPiece.moveList) {
                             if (coord.getX() == finalRow && coord.getY() == finalCol) {
                                 game.move(finalRow, finalCol, lastClickedPiece, tempRow, tempCol, lastClickedPiece.color, current);
@@ -282,9 +282,9 @@ public class Board extends GridPane {
                                 if (game.checkForPromotion(lastClickedPiece)) {
                                     drawPromotionChoosingScreen((Pawn) lastClickedPiece, finalRow, finalCol);
                                 }
-                                Board.refreshBoard();
                                 try {
                                     turn.changeTurn();
+                                    refreshBoard();
                                 } catch (IOException e) {
                                     throw new RuntimeException(e);
                                 } catch (InterruptedException e) {
@@ -304,23 +304,30 @@ public class Board extends GridPane {
         GameState.is_bot_static.addListener((obs, oldVal, newVal) -> {
             if(current.is_bot && !game_over) {
                 if (opponent_is_bot) {
-                    Pair<Coordinates<Integer, Integer>, Coordinates<Integer, Integer>> move = opponent_bot.setMove();
-                    if (move != null) {
-                        int pieceRow = move.first().getX();
-                        int pieceCol = move.first().getY();
-                        int moveRow = move.second().getX();
-                        int moveCol = move.second().getY();
-                        game.move(moveRow, moveCol, game_board[pieceRow][pieceCol], pieceRow, pieceCol, game_board[pieceRow][pieceCol].color, current);
-                        if (game.checkForPromotion(Board.game_board[moveRow][moveCol])) {
-                            game.promotion(opponent_bot.getPromotionPiece(turn.player, getCellLabel(moveRow, moveCol)), moveRow, moveCol, (Pawn)Board.game_board[moveRow][moveCol]);
-                        }
-                        try {
-                            turn.changeTurn();
-                        } catch (IOException | InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        refreshBoard();
+                    refreshBoard();
+                    try {
+                        Thread.sleep(10);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
                     }
+                    Platform.runLater(() -> {
+                        Pair<Coordinates<Integer, Integer>, Coordinates<Integer, Integer>> move = opponent_bot.setMove();
+                        if (move != null) {
+                            int pieceRow = move.first().getX();
+                            int pieceCol = move.first().getY();
+                            int moveRow = move.second().getX();
+                            int moveCol = move.second().getY();
+                            game.move(moveRow, moveCol, game_board[pieceRow][pieceCol], pieceRow, pieceCol, game_board[pieceRow][pieceCol].color, current);
+                            if (game.checkForPromotion(Board.game_board[moveRow][moveCol])) {
+                                game.promotion(opponent_bot.getPromotionPiece(turn.player, getCellLabel(moveRow, moveCol)), moveRow, moveCol, (Pawn)Board.game_board[moveRow][moveCol]);
+                            }
+                            try {
+                                turn.changeTurn();
+                            } catch (IOException | InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
                 }
             }
         });
@@ -341,7 +348,6 @@ public class Board extends GridPane {
                 } catch (IOException | InterruptedException e) {
                     e.printStackTrace();
                 }
-                refreshBoard();
             }
         }
 

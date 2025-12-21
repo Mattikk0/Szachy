@@ -186,6 +186,7 @@ public class King extends Pieces{
     }
     void avoidOppKing(List<Coordinates<Integer, Integer>> filteredList) {
         Coordinates opp_king_position = findFigure(King.class, this.color.oppositeColor());
+        if(opp_king_position == null) return;
         for(Coordinates field : this.zone){
             if(((King)Board.game_board[opp_king_position.getX()][opp_king_position.getY()]).zone.contains(field)){
                 filteredList.remove(field);
@@ -271,5 +272,16 @@ public class King extends Pieces{
                 }
             }
         }
+    }
+
+    @Override
+    int calculateMoveStrength(Coordinates<Integer, Integer> move) {
+        int strength = 0;
+        if(!(move == null)) {
+            if (this.takesList.contains(move) && Board.game_board[move.getX()][move.getY()] != null && Board.game_board[move.getX()][move.getY()].color != this.color) {
+                strength += Board.game_board[move.getX()][move.getY()].value;
+            }
+        }
+        return strength;
     }
 }

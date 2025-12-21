@@ -67,3 +67,9 @@ Wersja 2.0
 Wersja 2.1
 
 (m) zmieniona roszada (działa gdy czarny jest na dole planszy). Gra wczytuje już rozgrywkę z botem tak że bot wykonuje juz ruchy po wczytaniu. Promocja dla bota działa.Zmiany w zapsie do pliku i w odczycie z pliku (informacje o tym kto gra jakim kolorem i który kolor jest na dole planszy)
+
+Wersja 2.2
+
+(+) Bot poziom 1 - algorytm minimax który uwzględnia różne aspekty podczas obliczania siły danego ruchu. Dla każdej figury dodana osobna funkcja obliczająca właśnie siłę tego ruchu.
+
+(!) Do poprawy jest liczenie siły ruchu ponieważ bot zwraca bardzo duże liczby mimo że niekoniecznie moga one wyjść z tych działań.

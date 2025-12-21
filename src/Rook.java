@@ -1,5 +1,6 @@
 import javafx.scene.control.Label;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Rook extends Pieces {
@@ -155,6 +156,38 @@ public class Rook extends Pieces {
         }
 
         return false;
+    }
+    @Override
+    int calculateMoveStrength(Coordinates<Integer, Integer> move) {
+        int strength = 0;
+        if(!(move == null)) {
+            if (this.takesList.contains(move) && Board.game_board[move.getX()][move.getY()] != null && Board.game_board[move.getX()][move.getY()].color != this.color) {
+                strength += Board.game_board[move.getX()][move.getY()].value - this.value;
+            }
+            if (this.canBeTaken()) {
+                strength += this.value * 10;
+            }
+            int oldRow = this.position.getX();
+            int oldCol = this.position.getY();
+            simulateMove(move);
+            if (this.isChecking()) {
+                strength += 3;
+                if (ChessGame.checkIfGameOver(this.color.oppositeColor())) {
+                    strength += 1000;
+                }
+            }
+            if (this.canBeTaken()) {
+                strength -= this.value * 10;
+            }
+            legalTakes(this.position.getX(), this.position.getY());
+            legalMoves(this.position.getX(), this.position.getY());
+            List<Coordinates<Integer, Integer>> combinedList = new ArrayList<>();
+            combinedList.addAll(this.moveList);
+            combinedList.addAll(this.takesList);
+            strength += combinedList.size() / 2;
+            undoSimulateMove(move, oldRow, oldCol);
+        }
+        return strength;
     }
 
 }

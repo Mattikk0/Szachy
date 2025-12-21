@@ -86,6 +86,46 @@ public class Pawn extends Pieces{
         return false;
     }
 
+    @Override
+    int calculateMoveStrength(Coordinates<Integer, Integer> move) {
+        int strength = 0;
+        if(!(move == null)) {
+            if (this.color == Board.player_on_bottom) {
+                strength += (7 - move.getX());
+            } else {
+                strength += move.getX();
+            }
+            if (this.takesList.contains(move) && Board.game_board[move.getX()][move.getY()] != null && Board.game_board[move.getX()][move.getY()].color != this.color) {
+                strength += Board.game_board[move.getX()][move.getY()].value;
+                for (int row = 0; row < 8; row++) {
+                    if (Board.game_board[row][move.getY()] != null && Board.game_board[row][move.getY()] instanceof Pawn && Board.game_board[row][move.getY()].color == this.color) {
+                        strength -= 1;
+                    }
+                }
+            }
+            int oldRow = this.position.getX();
+            int oldCol = this.position.getY();
+            simulateMove(move);
+            if (this.isChecking()) {
+                strength += 5;
+                if (ChessGame.checkIfGameOver(this.color.oppositeColor())) {
+                    strength += 1000;
+                }
+            }
+            if (this.canBeTaken()) {
+                strength -= 3;
+            }
+            legalTakes(this.position.getX(), this.position.getY());
+            for (Coordinates<Integer, Integer> take : this.takesList) {
+                if (take != null && Board.game_board[take.getX()][take.getY()] != null && Board.game_board[take.getX()][take.getY()].color != this.color) {
+                    strength += Board.game_board[take.getX()][take.getY()].value;
+                }
+            }
+            undoSimulateMove(move, oldRow, oldCol);
+        }
+        return strength;
+    }
+
     void enPassant(int row, int col){
         if(!isOutOfBoard(row, col+1) && Board.game_board[row][col+1] != null && Board.game_board[row][col+1] instanceof Pawn && Board.game_board[row][col+1].color != this.color && ((Pawn) Board.game_board[row][col+1]).movedByTwo == true){
             if(this.color == Board.player_on_bottom){
