@@ -160,31 +160,52 @@ public class Rook extends Pieces {
     @Override
     int calculateMoveStrength(Coordinates<Integer, Integer> move) {
         int strength = 0;
+        int oldRow = this.position.getX();
+        int oldCol = this.position.getY();
         if(!(move == null)) {
+            this.takesList.clear();
+            this.moveList.clear();
+            this.legalTakes(this.position.getX(), this.position.getY());
+            this.legalMoves(this.position.getX(), this.position.getY());
             if (this.takesList.contains(move) && Board.game_board[move.getX()][move.getY()] != null && Board.game_board[move.getX()][move.getY()].color != this.color) {
-                strength += Board.game_board[move.getX()][move.getY()].value - this.value;
+                strength += Board.game_board[move.getX()][move.getY()].value * 100;
+                simulateMove(move);
+                if (this.canBeTaken()) {
+                    strength -= this.value * 100;
+                }
+                undoSimulateMove(move, oldRow, oldCol);
             }
             if (this.canBeTaken()) {
-                strength += this.value * 10;
+                strength += this.value * 100;
             }
-            int oldRow = this.position.getX();
-            int oldCol = this.position.getY();
+            for(int row = 0; row<8; row++){
+                if(Board.game_board[row][move.getY()] != null && Board.game_board[row][move.getY()].color == this.color && !(Board.game_board[row][move.getY()] instanceof Rook)){
+                    strength += 25;
+                }
+            }
+            for(int col = 0; col<8; col++){
+                if(Board.game_board[move.getX()][col] != null && Board.game_board[move.getX()][col].color == this.color && !(Board.game_board[move.getX()][col] instanceof Rook)){
+                    strength += 25;
+                }
+            }
             simulateMove(move);
             if (this.isChecking()) {
-                strength += 3;
+                strength += 30;
                 if (ChessGame.checkIfGameOver(this.color.oppositeColor())) {
                     strength += 1000;
                 }
             }
             if (this.canBeTaken()) {
-                strength -= this.value * 10;
+                strength -= this.value * 100;
             }
             legalTakes(this.position.getX(), this.position.getY());
             legalMoves(this.position.getX(), this.position.getY());
             List<Coordinates<Integer, Integer>> combinedList = new ArrayList<>();
             combinedList.addAll(this.moveList);
             combinedList.addAll(this.takesList);
-            strength += combinedList.size() / 2;
+            if(combinedList.size() > 8){
+                strength += 30;
+            }
             undoSimulateMove(move, oldRow, oldCol);
         }
         return strength;

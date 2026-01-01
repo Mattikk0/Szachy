@@ -306,7 +306,7 @@ public class Board extends GridPane {
                 if (opponent_is_bot) {
                     refreshBoard();
                     try {
-                        Thread.sleep(10);
+                        Thread.sleep(100);
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }

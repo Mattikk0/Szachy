@@ -5,6 +5,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
+import static java.lang.Math.abs;
+
 public class King extends Pieces{
     public boolean moved;
     public boolean isChecked;
@@ -279,7 +281,10 @@ public class King extends Pieces{
         int strength = 0;
         if(!(move == null)) {
             if (this.takesList.contains(move) && Board.game_board[move.getX()][move.getY()] != null && Board.game_board[move.getX()][move.getY()].color != this.color) {
-                strength += Board.game_board[move.getX()][move.getY()].value;
+                strength += Board.game_board[move.getX()][move.getY()].value * 100;
+            }
+            if(abs(this.position.getY() - move.getY()) == 2){
+                strength += 500;
             }
         }
         return strength;

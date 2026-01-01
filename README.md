@@ -73,3 +73,9 @@ Wersja 2.2
 (+) Bot poziom 1 - algorytm minimax który uwzględnia różne aspekty podczas obliczania siły danego ruchu. Dla każdej figury dodana osobna funkcja obliczająca właśnie siłę tego ruchu.
 
 (!) Do poprawy jest liczenie siły ruchu ponieważ bot zwraca bardzo duże liczby mimo że niekoniecznie moga one wyjść z tych działań.
+
+Wersja 2.3
+
+(m) Zmieniony bot poziom 1 - już nie minimax a szukanie najlepszego aktualnie ruchu. Do promocji zasze bierze hetmana.
+
+(!) Czasem gra sie nie kończy i nie pokazuje menu końcowego mimo mata

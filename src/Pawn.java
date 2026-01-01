@@ -15,6 +15,7 @@ public class Pawn extends Pieces{
     public boolean did_ep;
     public boolean movedByTwo;
     public static List<Coordinates<Integer, Integer>> epList = new ArrayList<>();
+    List<Coordinates<Integer, Integer>> filteredTakesList = new ArrayList<>();
     @Override
     public void legalMoves(int row, int col) {
         if(this.color == Board.player_on_bottom){
@@ -90,35 +91,43 @@ public class Pawn extends Pieces{
     int calculateMoveStrength(Coordinates<Integer, Integer> move) {
         int strength = 0;
         if(!(move == null)) {
+            this.takesList.clear();
+            this.moveList.clear();
+            filteredTakesList.clear();
+            this.legalTakes(this.position.getX(), this.position.getY());
+            this.legalMoves(this.position.getX(), this.position.getY());
+            for (Coordinates<Integer, Integer> take : this.takesList) {
+                if (Board.game_board[take.getX()][take.getY()] != null && Board.game_board[take.getX()][take.getY()].color != Board.turn.player) {
+                    filteredTakesList.add(take);
+                }
+            }
             if (this.color == Board.player_on_bottom) {
-                strength += (7 - move.getX());
+                strength += (70 - move.getX()*10);
             } else {
-                strength += move.getX();
+                strength += move.getX()*10;
             }
             if (this.takesList.contains(move) && Board.game_board[move.getX()][move.getY()] != null && Board.game_board[move.getX()][move.getY()].color != this.color) {
-                strength += Board.game_board[move.getX()][move.getY()].value;
-                for (int row = 0; row < 8; row++) {
-                    if (Board.game_board[row][move.getY()] != null && Board.game_board[row][move.getY()] instanceof Pawn && Board.game_board[row][move.getY()].color == this.color) {
-                        strength -= 1;
-                    }
-                }
+                strength += Board.game_board[move.getX()][move.getY()].value * 100;
             }
             int oldRow = this.position.getX();
             int oldCol = this.position.getY();
+            if((move.getY() == 4 || move.getY() == 3) && (move.getX() == 3 || move.getX() == 4)){
+                strength += 50;
+            }
             simulateMove(move);
             if (this.isChecking()) {
-                strength += 5;
+                strength += 10;
                 if (ChessGame.checkIfGameOver(this.color.oppositeColor())) {
                     strength += 1000;
                 }
             }
             if (this.canBeTaken()) {
-                strength -= 3;
+                strength -= 100;
             }
             legalTakes(this.position.getX(), this.position.getY());
             for (Coordinates<Integer, Integer> take : this.takesList) {
                 if (take != null && Board.game_board[take.getX()][take.getY()] != null && Board.game_board[take.getX()][take.getY()].color != this.color) {
-                    strength += Board.game_board[take.getX()][take.getY()].value;
+                    strength += Board.game_board[take.getX()][take.getY()].value*100;
                 }
             }
             undoSimulateMove(move, oldRow, oldCol);

@@ -135,7 +135,6 @@ public class ChessGame {
         King king = (King) Board.game_board[Pieces.findFigure(King.class, king_color).getX()][Pieces.findFigure(King.class, king_color).getY()];
         if (king.isChecked && checkIfGameOver(king_color)) {
             winner = king_color.oppositeColor().toString();
-            System.out.println(winner);
             Callable<Void> task = () -> {
                 try {
                     EndMenu endMenu = new EndMenu();
