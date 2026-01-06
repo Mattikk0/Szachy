@@ -165,7 +165,7 @@ public class ChessGame {
                 try {
                     EndMenu endMenu = new EndMenu();
                     endMenu.launchMenu(winner);
-                    if (!endMenu.restart) {
+                    if (endMenu.restart) {
                         Platform.runLater(() -> Main.restart_game.set(true));
                     } else {
                         exit(0);

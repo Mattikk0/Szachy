@@ -78,4 +78,8 @@ Wersja 2.3
 
 (m) Zmieniony bot poziom 1 - już nie minimax a szukanie najlepszego aktualnie ruchu. Do promocji zasze bierze hetmana.
 
-(!) Czasem gra sie nie kończy i nie pokazuje menu końcowego mimo mata
+(!) Czasem gra sie nie kończy i nie pokazuje menu końcowego mimo mata, nie da sie ruszać figurami gdy bot lvl  1 gra białymi. 
+
+Wersja 2.4
+
+(m) poprawione poprzednie błędy z botem lvl 1

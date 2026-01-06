@@ -198,14 +198,6 @@ public class Rook extends Pieces {
             if (this.canBeTaken()) {
                 strength -= this.value * 100;
             }
-            legalTakes(this.position.getX(), this.position.getY());
-            legalMoves(this.position.getX(), this.position.getY());
-            List<Coordinates<Integer, Integer>> combinedList = new ArrayList<>();
-            combinedList.addAll(this.moveList);
-            combinedList.addAll(this.takesList);
-            if(combinedList.size() > 8){
-                strength += 30;
-            }
             undoSimulateMove(move, oldRow, oldCol);
         }
         return strength;

@@ -147,16 +147,6 @@ public class Bishop extends Pieces {
         int oldRow = this.position.getX();
         int oldCol = this.position.getY();
         if(!(move == null)) {
-            this.takesList.clear();
-            this.moveList.clear();
-            this.legalTakes(this.position.getX(), this.position.getY());
-            this.legalMoves(this.position.getX(), this.position.getY());
-            List<Coordinates<Integer, Integer>> combinedList1 = new ArrayList<>();
-            combinedList1.addAll(this.moveList);
-            combinedList1.addAll(this.takesList);
-            if(combinedList1.size() < 8){
-                strength += 50;
-            }
             if (this.takesList.contains(move) && Board.game_board[move.getX()][move.getY()] != null && Board.game_board[move.getX()][move.getY()].color != this.color) {
                 strength += Board.game_board[move.getX()][move.getY()].value * 100;
                 simulateMove(move);
@@ -184,7 +174,7 @@ public class Bishop extends Pieces {
             combinedList.addAll(this.moveList);
             combinedList.addAll(this.takesList);
             if(combinedList.size() > 8){
-                strength += 50;
+                strength += 30;
             }
             undoSimulateMove(move, oldRow, oldCol);
         }

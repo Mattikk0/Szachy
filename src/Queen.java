@@ -240,6 +240,7 @@ public class Queen extends Pieces{
         return false;
     }
 
+
     @Override
     int calculateMoveStrength(Coordinates<Integer, Integer> move) {
         int strength = 0;
