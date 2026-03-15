@@ -5,14 +5,18 @@ from jpype import JClass
 from jpype.types import *
 import sys
 from tkinter import messagebox
+import os
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+if "JAVA_HOME" not in os.environ:
+    os.environ["JAVA_HOME"] = r"C:\Program Files\Java\jdk-22"
 
-classpath = ["C:/Users/matil/IdeaProjects/Szachy/out/production/Szachy"]
+classpath = [os.path.join(BASE_DIR, "out", "production", "Szachy")]
 
-jpype.startJVM("C:/Program Files/Java/jdk-22/bin/server/jvm.dll", classpath=classpath)
+jpype.startJVM(jpype.getDefaultJVMPath(), classpath=classpath)
+
 ChooserMenu = JClass("ChooserMenu")
-
 CM = ChooserMenu()
 
 root = tk.Tk()

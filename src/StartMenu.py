@@ -4,10 +4,16 @@ import jpype.imports
 from jpype import JClass
 from jpype.types import *
 import sys
+import os
 
-classpath = ["C:/Users/matil/IdeaProjects/Szachy/out/production/Szachy"]
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-jpype.startJVM("C:/Program Files/Java/jdk-22/bin/server/jvm.dll", classpath=classpath)
+if "JAVA_HOME" not in os.environ:
+    os.environ["JAVA_HOME"] = r"C:\Program Files\Java\jdk-22"
+
+classpath = [os.path.join(BASE_DIR, "out", "production", "Szachy")]
+
+jpype.startJVM(jpype.getDefaultJVMPath(), classpath=classpath)
 StartMenu = JClass("StartMenu")
 
 SM = StartMenu()
