@@ -9,9 +9,7 @@ public class ErrorMenu extends Menu {
     public boolean can_load;
     public boolean load_finished_game;
     @Override
-    public void launchMenu() throws InterruptedException, IOException {
-
-    }
+    public void launchMenu() throws InterruptedException, IOException {}
 
     @Override
     public void launchMenu(String error) throws InterruptedException, IOException {
